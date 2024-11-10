@@ -1,7 +1,7 @@
 from Utils import Point
 from Fare import Fare
 
-fares : {int: Fare} = { }
+fares : list[Fare] = [ ]
 
 # Lazy way to quickly generate some dummy fares
 points = [
@@ -11,6 +11,5 @@ points = [
     Point(-5,0)
 ]
 for point in points:
-    f = Fare(Point(0,0), point)
-    fares[f.ID] = f
+    fares.append(Fare(Point(0,0), point))
 

@@ -1,21 +1,15 @@
 from Utils import Point
 
 class Fare:
-    __lastID : int = 0
     def __init__(self, src : Point, dest: Point):
         """
         :param src: Location the ducky is picked up at
         :param dest: Location the ducky is delivered to
         """
-        self.ID = self.__generate_id()
         self.src = src
         self.dest = dest
         self.dist = src.dist(dest)
         self.team : int | None = None
-
-    def __generate_id(self) -> int:
-        self.__lastID += 1
-        return self.__lastID
 
     def compute_fare(self) -> float:
         """

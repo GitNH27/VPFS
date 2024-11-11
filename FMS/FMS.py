@@ -1,5 +1,6 @@
 from Utils import Point
 from Fare import Fare
+from Team import Team
 
 fares : list[Fare] = [ ]
 
@@ -13,3 +14,9 @@ points = [
 for point in points:
     fares.append(Fare(Point(0,0), point))
 
+teams : {int : Team} = {
+    3 : Team(3),
+    5 : Team(5),
+    7 : Team(7),
+    10 : Team(10)
+}

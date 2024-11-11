@@ -30,14 +30,36 @@ def serve_fares():
 def claim_fare(idx: int, team: int):
     success = False
     message = ""
-    if idx < len(FMS.fares):
-        success = FMS.fares[idx].claim_fare(team)
-        if not success:
-            message = "Fare already claimed"
+    if team in FMS.teams.keys():
+        if idx < len(FMS.fares):
+            if FMS.fares[idx].claim_fare(team):
+                FMS.teams[team].currentFare = idx
+                success = True
+            else:
+                message = "Fare already claimed"
+        else:
+            message = f"Could not find fare with ID {id}"
     else:
-        message = "Could not find fare ID"
+        message = f"Team {team} not in this match"
 
     return jsonify({
         "success": success,
         "message": message
+    })
+
+@app.route("/fares/current/<int:team>")
+def current_fare(team: int):
+    fare_idx = FMS.teams[team].currentFare
+    fare = FMS.fares[fare_idx]
+    return jsonify({
+        "id": fare_idx,
+        "src": {
+            "x": fare.src.x,
+            "y": fare.src.y
+        },
+        "dest": {
+            "x": fare.dest.x,
+            "y": fare.dest.y
+        },
+        "claimed": fare.team is not None
     })

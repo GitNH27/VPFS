@@ -49,17 +49,30 @@ def claim_fare(idx: int, team: int):
 
 @app.route("/fares/current/<int:team>")
 def current_fare(team: int):
-    fare_idx = FMS.teams[team].currentFare
-    fare = FMS.fares[fare_idx]
+    fare_dict = None
+    message = ""
+    if team in FMS.teams.keys():
+        fare_idx = FMS.teams[team].currentFare
+        if fare_idx is None:
+            message = f"Team {team} does not have an active fare"
+        else:
+            fare = FMS.fares[fare_idx]
+            fare_dict = {
+                "id": fare_idx,
+                "src": {
+                    "x": fare.src.x,
+                    "y": fare.src.y
+                },
+                "dest": {
+                    "x": fare.dest.x,
+                    "y": fare.dest.y
+                },
+                "claimed": fare.team is not None
+            }
+    else:
+        message = f"Team {team} not in this match"
+
     return jsonify({
-        "id": fare_idx,
-        "src": {
-            "x": fare.src.x,
-            "y": fare.src.y
-        },
-        "dest": {
-            "x": fare.dest.x,
-            "y": fare.dest.y
-        },
-        "claimed": fare.team is not None
+        "fare": fare_dict,
+        "message": message
     })

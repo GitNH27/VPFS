@@ -25,3 +25,19 @@ def serve_fares():
             "claimed": fare.team is not None
         })
     return jsonify(data)
+
+@app.route("/fares/claim/<int:idx>/<int:team>")
+def claim_fare(idx: int, team: int):
+    success = False
+    message = ""
+    if idx < len(FMS.fares):
+        success = FMS.fares[idx].claim_fare(team)
+        if not success:
+            message = "Fare already claimed"
+    else:
+        message = "Could not find fare ID"
+
+    return jsonify({
+        "success": success,
+        "message": message
+    })

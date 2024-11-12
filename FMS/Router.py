@@ -76,3 +76,24 @@ def current_fare(team: int):
         "fare": fare_dict,
         "message": message
     })
+
+@app.route("/whereami/<int:team>")
+def whereami_get(team: int):
+    point = None
+    last_update : int = 0
+    message = ""
+    if team in FMS.teams.keys():
+        team = FMS.teams[team]
+        point = {
+            "x": team.pos.x,
+            "y": team.pos.y
+        },
+        last_update = team.lastPosUpdate
+    else:
+        message = f"Team {team} not in this match"
+
+    return jsonify({
+        "position": point,
+        "last_update": last_update,
+        "message": message
+    })

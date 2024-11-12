@@ -1,3 +1,5 @@
+import time
+
 from Utils import Point
 
 class Team:
@@ -8,3 +10,7 @@ class Team:
         self.currentFare : int or None = None
         self.pos = Point(0, 0)
         self.lastPosUpdate = 0
+
+    def update_position(self, pos : Point):
+        self.pos = pos
+        self.lastPosUpdate = time.time()

@@ -113,5 +113,36 @@ def sock_connect(auth):
 def sock_disconnect():
     print("Disconnected")
 
+whereami_update_schema = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "team": {"type": "number"},
+            "x": {"type": "number"},
+            "y": {"type": "number"},
+        },
+        "required": ["team", "x", "y"],
+    },
+}
+@sock.on("whereami_update")
+def whereami_update(json):
+    # Data should be JSON payload with [{team:int, x:float, y:float}]
+    # Log sending address, should be whitelisted in production
+    print(f"Recv whereami update from {request.remote_addr}")
+    # Validate payload
+    try:
+        validate(json, schema=whereami_update_schema)
+        for entry in json:
+            team = entry['team']
+            x = entry['x']
+            y = entry['y']
+            if team in FMS.teams.keys():
+                FMS.teams[team].update_position(Point(x, y))
+            else:
+                print(f"Team not in match {team}")
+    except ValidationError as e:
+        print(f"Validation failed: {e}")
+
 if __name__ == "__main__":
     sock.run(app, allow_unsafe_werkzeug=True)

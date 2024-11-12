@@ -1,7 +1,13 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_socketio import SocketIO
+from jsonschema.exceptions import ValidationError
+
+from Utils import Point
 import FMS
+from jsonschema import validate
 
 app = Flask(__name__)
+sock = SocketIO(app)
 
 @app.route("/")
 def serve_root():
@@ -97,3 +103,15 @@ def whereami_get(team: int):
         "last_update": last_update,
         "message": message
     })
+
+# Socket endpoints
+@sock.on("connect")
+def sock_connect(auth):
+    print("Connected")
+
+@sock.on("disconnect")
+def sock_disconnect():
+    print("Disconnected")
+
+if __name__ == "__main__":
+    sock.run(app, allow_unsafe_werkzeug=True)

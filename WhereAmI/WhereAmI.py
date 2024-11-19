@@ -47,6 +47,17 @@ def show_tags(img, detections):
         img = cv2.rectangle(img, (int(tag.corners[0][0]), int(tag.corners[0][1])), (int(tag.corners[2][0]), int(tag.corners[2][1])), (0, 0, 255), 2)
     return img
 
+refTags = {
+        0: (0,0,0),
+        }
+def computeCameraPos(detections):
+    camPos = (999, 999, 999)
+    for det in detections:
+        if det.tag_id in refTags:
+            refPos = refTags[det.tag_id]
+            tagPos = (det.pose_t[0][0], det.pose_t[1][0], det.pose_t[2][0])
+            camPos = (refPos[0]-tagPos[0], refPos[1]-tagPos[1], refPos[2]-tagPos[2])
+    return camPos
 
 if not cam.isOpened():
     print("Cannot open camera")
@@ -71,10 +82,8 @@ while True:
 
     # Detect tags
     detections = detector.detect(gray, True, (950, 950, 800, 455), 0.1)
-    for det in detections:
-        if det.tag_id == 0:
-            print(det.pose_t, det.pose_err)
     frame = show_tags(frame, detections)
+    cameraPos = computeCameraPos(detections)
 
     # Compute FPS
     frameTime = time.time() - lastTime
@@ -83,6 +92,7 @@ while True:
 
     # Add info block
     cv2.putText(frame, f"{frameWidth}x{frameHeight} @ {fps:.2f} fps", (0,frameHeight - 10), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"X{cameraPos[0]:.2f} Y{cameraPos[1]:.2f} Z{cameraPos[2]:.2f}", (0, frameHeight-200), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.imshow('frame', frame)
 
     cv2.waitKey(1)

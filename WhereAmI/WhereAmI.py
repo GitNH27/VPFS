@@ -4,6 +4,8 @@ import os
 # NOTE: pupil_apriltags seems to be broken on Python 3.12, so this needs to be run with <3.12
 from pupil_apriltags import Detector
 
+import utils
+
 detector = Detector(
     nthreads=4,
     quad_decimate=1,
@@ -83,7 +85,8 @@ while True:
     # Detect tags
     detections = detector.detect(gray, True, (950, 950, 800, 455), 0.1)
     frame = show_tags(frame, detections)
-    cameraPos = computeCameraPos(detections)
+    cameraPos = utils.computeCameraPos(detections)
+    tagPoses = utils.computeTagPoses(detections, cameraPos)
 
     # Compute FPS
     frameTime = time.time() - lastTime
@@ -92,7 +95,13 @@ while True:
 
     # Add info block
     cv2.putText(frame, f"{frameWidth}x{frameHeight} @ {fps:.2f} fps", (0,frameHeight - 10), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, f"X{cameraPos[0]:.2f} Y{cameraPos[1]:.2f} Z{cameraPos[2]:.2f}", (0, frameHeight-200), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+    #cv2.putText(frame, f"X{cameraPos[0]:.2f} Y{cameraPos[1]:.2f} Z{cameraPos[2]:.2f}", (0, frameHeight-200), font, 3, (255, 0, 255), 2, cv2.LINE_AA)
+    
+    i = -100
+    for tag in tagPoses:
+        cv2.putText(frame, f"{tag}: X{tagPoses[tag][0]:.2f} Y{tagPoses[tag][1]:.2f} Z{tagPoses[tag][2]:.2f}", (0, frameHeight + i), font, 3, (255, 0, 255), 2, cv2.LINE_AA)
+        i -= 50
+
     cv2.imshow('frame', frame)
 
     cv2.waitKey(1)

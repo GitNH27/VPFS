@@ -1,5 +1,6 @@
 import cv2
 import time
+import os
 # NOTE: pupil_apriltags seems to be broken on Python 3.12, so this needs to be run with <3.12
 from pupil_apriltags import Detector
 
@@ -22,6 +23,12 @@ pipeline = ' ! '.join([
 jetson = True
 
 if jetson:
+    # Configure camera for best results
+    os.system("v4l2-ctl -d /dev/video0 -c focus_auto=0")
+    os.system("v4l2-ctl -d /dev/video0 -c focus_absolute=0")
+    # Readback current settings
+    os.system("v4l2-ctl -d /dev/video0 -C focus_auto")
+    os.system("v4l2-ctl -d /dev/video0 -C focus_absolute")
     cam = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 else:
     cam = cv2.VideoCapture(0) # this is the magic!
@@ -63,7 +70,10 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect tags
-    detections = detector.detect(gray)
+    detections = detector.detect(gray, True, (950, 950, 800, 455), 0.1)
+    for det in detections:
+        if det.tag_id == 0:
+            print(det.pose_t, det.pose_err)
     frame = show_tags(frame, detections)
 
     # Compute FPS

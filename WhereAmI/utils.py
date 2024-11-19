@@ -16,21 +16,38 @@ refTags = {
 
 }
 
+def detToTransformMat(detection):
+    trans = detection.pose_t
+    rot = detection.pose_R
+    
+    # Combine to obtain homogenious transformation matrix
+    mat = np.concatenate((rot, trans), axis=1)
+    mat = np.concatenate((mat, [[0,0,0,1]]), axis=0)
+    return mat
+
 def computeCameraPos(detections):
-    camPos = (999, 999, 999)
+    mapToCam = np.array([
+        [1,0,0,999],
+        [0,1,0,999],
+        [0,0,1,999],
+        [0,0,0,1]
+        ])
     
     for det in detections:
         if det.tag_id in refTags:
-            camPos = (-det.pose_t[0][0], -det.pose_t[1][0], -det.pose_t[2][0])
+            camToTag = detToTransformMat(det)
+            mapToCam = np.matmul(refTags[det.tag_id], np.linalg.inv(camToTag))
     
-    return camPos
+    return mapToCam
 
 def computeTagPoses(detections, camPos):
     tagPoses = {}
     for det in detections:
+        tagPose = detToTransformMat(det)
+        tagPose = np.matmul(camPos, tagPose)
         tagPoses[det.tag_id] = (
-                camPos[0] + det.pose_t[0][0],
-                camPos[1] + det.pose_t[1][0],
-                camPos[2] + det.pose_t[2][0]
+                tagPose[0][3],
+                tagPose[1][3],
+                tagPose[2][3]
                 )
     return tagPoses

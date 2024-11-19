@@ -4,14 +4,30 @@ import time
 from pupil_apriltags import Detector
 
 detector = Detector(
+    nthreads=4,
     quad_decimate=1,
     quad_sigma=0.1,
-    decode_sharpening=1.5
+    decode_sharpening=1
 )
-cam = cv2.VideoCapture(0, cv2.CAP_DSHOW) # this is the magic!
 
-cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)
-cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 900)
+# GStreamer pipeline to work with Jetson
+pipeline = ' ! '.join([
+    "v4l2src device=/dev/video0",
+    "video/x-raw, fomat=YUYV, width=1600, height=896, framerate=15/2",
+    "videoconvert",
+    "video/x-raw, format=(string)BGR",
+    "appsink drop=true sync=false"
+    ])
+
+jetson = True
+
+if jetson:
+    cam = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+else:
+    cam = cv2.VideoCapture(0) # this is the magic!
+
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 900)
 
 frameWidth = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
 frameHeight = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -39,9 +55,9 @@ while True:
         break
 
     # Sharpen the image
-    strength = 1.75
-    blurred = cv2.GaussianBlur(frame, (0, 0), 1)
-    frame = cv2.addWeighted(frame, 1.0 + strength, blurred, -strength, 0)
+    # strength = 1.75
+    # blurred = cv2.GaussianBlur(frame, (0, 0), 1)
+    # frame = cv2.addWeighted(frame, 1.0 + strength, blurred, -strength, 0)
 
     # Process the frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

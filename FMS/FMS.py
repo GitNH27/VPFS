@@ -22,5 +22,11 @@ teams : {int : Team} = {
 }
 
 def periodic():
+    global fares
     while True:
+        # with mutex:
+        # Update fare statuses
+        for fare in fares:
+            fare.periodic(teams)
+
         time.sleep(0.02)

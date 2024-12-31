@@ -1,0 +1,47 @@
+body {
+    font-family: sans-serif;
+    display: grid;
+    grid-template-areas: "title . fares" "teams . fares";
+    grid-template-rows: auto 100%;
+    grid-template-columns: 35% 10% 55%;
+    padding: 2em;
+}
+
+h3 {
+    margin: 0
+}
+
+.bg-warn {
+    background-color: orange !important;
+    color: black;
+}
+
+.bg-ok {
+    background-color: green !important;
+    color: white;
+}
+
+.team {
+    border: 1px solid black;
+    padding: 1em;
+    display: grid;
+    grid-template-areas: 
+        "title title"
+        "money position"
+}
+
+.fare {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+}
+
+.fare>h3 {
+    padding-left: 0.5em;
+}
+
+.fare span {
+    padding: 0.25em 0.75em;
+    border-radius: 0.5em;
+}

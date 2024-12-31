@@ -19,18 +19,24 @@ def serve_fares():
     data = []
     # Create copied list of data with desired information
     for idx, fare in enumerate(FMS.fares):
-        data.append({
-            "id": idx,
-            "src": {
-                "x": fare.src.x,
-                "y": fare.src.y
-            },
-            "dest": {
-                "x": fare.dest.x,
-                "y": fare.dest.y
-            },
-            "claimed": fare.team is not None
-        })
+        if fare.isActive:
+            data.append({
+                "id": idx,
+                "src": {
+                    "x": fare.src.x,
+                    "y": fare.src.y
+                },
+                "dest": {
+                    "x": fare.dest.x,
+                    "y": fare.dest.y
+                },
+                "claimed": fare.team is not None,
+                "active": fare.isActive,
+                "expiry": fare.expiry,
+                "inPosition": fare.inPosition,
+                "pickedUp": fare.pickedUp,
+                "completed": fare.completed
+            })
     return jsonify(data)
 
 @app.route("/fares/claim/<int:idx>/<int:team>")
@@ -74,7 +80,12 @@ def current_fare(team: int):
                     "x": fare.dest.x,
                     "y": fare.dest.y
                 },
-                "claimed": fare.team is not None
+                "claimed": fare.team is not None,
+                "active": fare.isActive,
+                "expiry": fare.expiry,
+                "inPosition": fare.inPosition,
+                "pickedUp": fare.pickedUp,
+                "completed": fare.completed
             }
     else:
         message = f"Team {team} not in this match"

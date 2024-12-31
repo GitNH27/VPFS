@@ -11,6 +11,11 @@ h3 {
     margin: 0
 }
 
+.bg-neutral {
+    background-color: lightgrey !important;
+    color: black;
+}
+
 .bg-warn {
     background-color: orange !important;
     color: black;
@@ -44,4 +49,11 @@ h3 {
 .fare span {
     padding: 0.25em 0.75em;
     border-radius: 0.5em;
+}
+
+#fare-divider {
+    height: 1px;
+    width: 100%;
+    background-color: black;
+    margin: 5px 0;
 }

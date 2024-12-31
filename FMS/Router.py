@@ -52,11 +52,13 @@ def serve_fares():
                         "y": fare.dest.y
                     },
                     "claimed": fare.team is not None,
+                    "team": fare.team,
                     "active": fare.isActive,
                     "expiry": fare.expiry,
                     "inPosition": fare.inPosition,
                     "pickedUp": fare.pickedUp,
-                    "completed": fare.completed
+                    "completed": fare.completed,
+                    "paid": fare.paid
                 })
         return jsonify(data)
 
@@ -104,6 +106,7 @@ def current_fare(team: int):
                         "y": fare.dest.y
                     },
                     "claimed": fare.team is not None,
+                    "team": fare.team,
                     "active": fare.isActive,
                     "expiry": fare.expiry,
                     "inPosition": fare.inPosition,

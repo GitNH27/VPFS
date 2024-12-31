@@ -14,6 +14,25 @@ sock = SocketIO(app)
 def serve_root():
     return "FMS is alive"
 
+@app.route("/teams")
+def serve_teams():
+    data = []
+    with FMS.mutex:
+        # Create list of teams with desired information
+        for team in FMS.teams.values():
+            data.append({
+                "number": team.number,
+                "money": team.money,
+                "karma": team.karma,
+                "currentFare": team.currentFare,
+                "position": {
+                    "x": team.pos.x,
+                    "y": team.pos.y
+                },
+                "lastPosUpdate": team.lastPosUpdate
+            })
+    return jsonify(data)
+
 @app.route("/fares")
 def serve_fares():
     data = []

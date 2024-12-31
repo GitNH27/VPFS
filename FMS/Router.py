@@ -5,6 +5,7 @@ from jsonschema.exceptions import ValidationError
 from Utils import Point
 import FMS
 from jsonschema import validate
+from threading import Thread
 
 app = Flask(__name__)
 sock = SocketIO(app)
@@ -145,4 +146,5 @@ def whereami_update(json):
         print(f"Validation failed: {e}")
 
 if __name__ == "__main__":
+    Thread(target=FMS.periodic, daemon=True).start()
     sock.run(app, allow_unsafe_werkzeug=True)

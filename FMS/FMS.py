@@ -20,3 +20,7 @@ teams : {int : Team} = {
     7 : Team(7),
     10 : Team(10)
 }
+
+def periodic():
+    while True:
+        time.sleep(0.02)

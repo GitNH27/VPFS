@@ -1,6 +1,7 @@
 import random
 
 from Utils import Point
+from Team import Team
 import time
 
 POSITION_TOLERANCE = 0.15
@@ -24,6 +25,7 @@ class Fare:
         self.inPosition = False
         self.pickedUp = False
         self.completed = False
+        self.paid = False
 
     def compute_fare(self) -> float:
         """
@@ -31,6 +33,14 @@ class Fare:
         :return:
         """
         return self.dist * 7.5 + 2
+
+    def compute_karma(self) -> float:
+        """
+        Compute the karma earned from delivering this ducky
+        :return:
+        """
+        # TODO: Implement
+        return 5
 
     def claim_fare(self, team : int) -> bool:
         """
@@ -44,11 +54,29 @@ class Fare:
             return True
         return False
 
-    def periodic(self, teams):
+    def pay_fare(self, teams : [Team]):
+        """
+        Pay the team their fare
+        Will ensure that fare is completed and fare is not already paid
+        :param teams: List of teams
+        """
+        if self.paid or not self.completed:
+            return
+        team = teams[self.team]
+        if team is not None:
+            team.money += self.compute_fare()
+            team.karma += self.compute_karma()
+            self.paid = True
+
+    def periodic(self, teams : [Team]):
         """
         Update phases of the fare
         Checks team position to determine if they are at start/destination, and if dropoff/pickup should occur
         """
+        # Make sure fare is paid out even if it becomes inactive
+        if self.completed and not self.paid:
+            self.pay_fare(teams)
+
         # Update active status
         if not self.isActive:
             return

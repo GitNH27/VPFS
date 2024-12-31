@@ -36,10 +36,11 @@ def serve_teams():
 @app.route("/fares")
 def serve_fares():
     data = []
+    allOpt = request.args.get("all", default=False, type=lambda st: st.lower() == "true")
     with FMS.mutex:
         # Create copied list of data with desired information
         for idx, fare in enumerate(FMS.fares):
-            if fare.isActive:
+            if fare.isActive or allOpt:
                 data.append({
                     "id": idx,
                     "src": {

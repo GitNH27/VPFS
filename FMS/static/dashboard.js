@@ -1,4 +1,4 @@
-var activeFareDiv, pastFareDiv, pastFareDivider;
+var teamsDiv, activeFareDiv, pastFareDiv, pastFareDivider;
 
 function setVisibility(element, visible){
     if(!visible)
@@ -7,9 +7,9 @@ function setVisibility(element, visible){
         element.style.display = "unset";
 }
 
-function getTimeDelta(utcTimeSeconds){
+function getTimeUntil(utcTimeSeconds){
     let currentTime = (new Date()).getTime() / 1000
-    return (utcTimeSeconds - currentTime).toFixed(1);
+    return (utcTimeSeconds - currentTime);
 }
 
 function generateFareElement(fare, id){
@@ -62,11 +62,11 @@ async function updateFares(){
             setVisibility(expiry, false)
         }
         else {
-            let delta = getTimeDelta(fare.expiry);
+            let delta = getTimeUntil(fare.expiry);
             if(delta < 0)
                 expiry.innerText = "Expired"
             else
-                expiry.innerText = `Expires in ${delta}`
+                expiry.innerText = `Expires in ${delta.toFixed(0)}`
             setVisibility(team, false)
             setVisibility(expiry, true)
         }
@@ -78,12 +78,72 @@ async function updateFares(){
     }
 }
 
+function generateTeamElement(team, id) {
+    let element = document.createElement("div");
+    element.classList.add("team");
+    element.id = id;
+    element.innerHTML = `
+    <h3 style="grid-area: title;">Team ${team.number}</h3>
+    <div style="grid-area: money;">
+        Money: <span id="team-${team.number}-money">${team.money}</span><br/>
+        Reputation: <span id="team-${team.number}-reputation">${team.karma}%</span><br/>
+        Current Fare: <span id="team-${team.number}-fare">None</span>
+    </div>
+    <div style="grid-area: position;">
+        X <span id="team-${team.number}-x">${team.position.x.toFixed(2)}</span><br/>
+        Y <span id="team-${team.number}-y">${team.position.y.toFixed(2)}</span><br/>
+        Last Update: <span id="team-${team.number}-postime">${team.lastPosUpdate}</span>
+    </div>
+    `
+
+    teamsDiv.appendChild(element);
+    return element;
+}
+
+async function updateTeams(){
+    let req = await fetch("http://localhost:5000/teams");
+    let data = await req.json();
+
+    for(var team of data){
+        let num = team.number;
+        let element = document.getElementById(`team-${num}`);
+        if(element == null){
+            element = generateTeamElement(team, `team-${num}`)
+        }
+
+        document.getElementById(`team-${team.number}-money`).innerText = `\$${team.money.toFixed(0)}`;
+        document.getElementById(`team-${team.number}-reputation`).innerText = `${team.karma}%`;
+        document.getElementById(`team-${team.number}-fare`).innerText = team.currentFare;
+        document.getElementById(`team-${team.number}-x`).innerText = team.position.x.toFixed(2);
+        document.getElementById(`team-${team.number}-y`).innerText = team.position.y.toFixed(2);
+
+        let posttime = document.getElementById(`team-${team.number}-postime`);
+        timeDelta = -getTimeUntil(team.lastPosUpdate) * 1000;
+
+        if(timeDelta > 10000000)
+            posttime.innerHTML = "Never"
+        else if (timeDelta > 10000)
+            posttime.innerText = `${(timeDelta/1000).toFixed(0)}s`;
+        else
+            posttime.innerText = `${timeDelta.toFixed(0)}ms`;
+
+        if(timeDelta > 5000)
+            posttime.style.color = "red";
+        else
+            posttime.style.color = "unset";
+    }
+}
+
 window.onload = () => {
     activeFareDiv = document.getElementById("active-fares");
     pastFareDiv = document.getElementById("past-fares");
     pastFareDivider = document.getElementById("fare-divider");
+    teamsDiv = document.getElementById("teams");
 
     setInterval(() => {
         updateFares();
-    }, 500);
+    }, 1000);
+    setInterval(() => {
+        updateTeams();
+    }, 100);
 }

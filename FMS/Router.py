@@ -17,83 +17,86 @@ def serve_root():
 @app.route("/fares")
 def serve_fares():
     data = []
-    # Create copied list of data with desired information
-    for idx, fare in enumerate(FMS.fares):
-        if fare.isActive:
-            data.append({
-                "id": idx,
-                "src": {
-                    "x": fare.src.x,
-                    "y": fare.src.y
-                },
-                "dest": {
-                    "x": fare.dest.x,
-                    "y": fare.dest.y
-                },
-                "claimed": fare.team is not None,
-                "active": fare.isActive,
-                "expiry": fare.expiry,
-                "inPosition": fare.inPosition,
-                "pickedUp": fare.pickedUp,
-                "completed": fare.completed
-            })
-    return jsonify(data)
+    with FMS.mutex:
+        # Create copied list of data with desired information
+        for idx, fare in enumerate(FMS.fares):
+            if fare.isActive:
+                data.append({
+                    "id": idx,
+                    "src": {
+                        "x": fare.src.x,
+                        "y": fare.src.y
+                    },
+                    "dest": {
+                        "x": fare.dest.x,
+                        "y": fare.dest.y
+                    },
+                    "claimed": fare.team is not None,
+                    "active": fare.isActive,
+                    "expiry": fare.expiry,
+                    "inPosition": fare.inPosition,
+                    "pickedUp": fare.pickedUp,
+                    "completed": fare.completed
+                })
+        return jsonify(data)
 
 @app.route("/fares/claim/<int:idx>/<int:team>")
 def claim_fare(idx: int, team: int):
-    success = False
-    message = ""
-    if team in FMS.teams.keys():
-        if idx < len(FMS.fares):
-            if FMS.fares[idx].claim_fare(team):
-                FMS.teams[team].currentFare = idx
-                success = True
+    with FMS.mutex:
+        success = False
+        message = ""
+        if team in FMS.teams.keys():
+            if idx < len(FMS.fares):
+                if FMS.fares[idx].claim_fare(team):
+                    FMS.teams[team].currentFare = idx
+                    success = True
+                else:
+                    message = "Fare already claimed"
             else:
-                message = "Fare already claimed"
+                message = f"Could not find fare with ID {id}"
         else:
-            message = f"Could not find fare with ID {id}"
-    else:
-        message = f"Team {team} not in this match"
+            message = f"Team {team} not in this match"
 
-    return jsonify({
-        "success": success,
-        "message": message
-    })
+        return jsonify({
+            "success": success,
+            "message": message
+        })
 
 @app.route("/fares/current/<int:team>")
 def current_fare(team: int):
-    fare_dict = None
-    message = ""
-    if team in FMS.teams.keys():
-        fare_idx = FMS.teams[team].currentFare
-        if fare_idx is None:
-            message = f"Team {team} does not have an active fare"
+    with FMS.mutex:
+        fare_dict = None
+        message = ""
+        if team in FMS.teams.keys():
+            fare_idx = FMS.teams[team].currentFare
+            if fare_idx is None:
+                message = f"Team {team} does not have an active fare"
+            else:
+                fare = FMS.fares[fare_idx]
+                fare_dict = {
+                    "id": fare_idx,
+                    "src": {
+                        "x": fare.src.x,
+                        "y": fare.src.y
+                    },
+                    "dest": {
+                        "x": fare.dest.x,
+                        "y": fare.dest.y
+                    },
+                    "claimed": fare.team is not None,
+                    "active": fare.isActive,
+                    "expiry": fare.expiry,
+                    "inPosition": fare.inPosition,
+                    "pickedUp": fare.pickedUp,
+                    "completed": fare.completed
+                }
         else:
-            fare = FMS.fares[fare_idx]
-            fare_dict = {
-                "id": fare_idx,
-                "src": {
-                    "x": fare.src.x,
-                    "y": fare.src.y
-                },
-                "dest": {
-                    "x": fare.dest.x,
-                    "y": fare.dest.y
-                },
-                "claimed": fare.team is not None,
-                "active": fare.isActive,
-                "expiry": fare.expiry,
-                "inPosition": fare.inPosition,
-                "pickedUp": fare.pickedUp,
-                "completed": fare.completed
-            }
-    else:
-        message = f"Team {team} not in this match"
+            message = f"Team {team} not in this match"
 
-    return jsonify({
-        "fare": fare_dict,
-        "message": message
-    })
+        return jsonify({
+            "fare": fare_dict,
+            "message": message
+        })
 
 @app.route("/whereami/<int:team>")
 def whereami_get(team: int):

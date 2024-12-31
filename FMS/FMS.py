@@ -4,8 +4,10 @@ from Faregen import generate_fare
 from Utils import Point
 from Fare import Fare
 from Team import Team
+from threading import Lock
 
 fares : list[Fare] = [ ]
+mutex = Lock()
 
 # Lazy way to quickly generate some dummy fares
 points = [
@@ -52,17 +54,17 @@ def do_generation() -> bool:
 def periodic():
     global fares
     while True:
-        # with mutex:
-        # Update fare statuses
-        for fare in fares:
-            fare.periodic(teams)
+        with mutex:
+            # Update fare statuses
+            for fare in fares:
+                fare.periodic(teams)
 
-        # Generate a new fare if needed
-        if do_generation():
-            fare = generate_fare(fares)
-            if fare is not None:
-                fares.append(fare)
-                print("New Fare")
-            else:
-                print("Failed faregen")
+            # Generate a new fare if needed
+            if do_generation():
+                fare = generate_fare(fares)
+                if fare is not None:
+                    fares.append(fare)
+                    print("New Fare")
+                else:
+                    print("Failed faregen")
         time.sleep(0.02)

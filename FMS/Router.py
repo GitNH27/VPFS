@@ -6,9 +6,12 @@ from Utils import Point
 import FMS
 from jsonschema import validate
 from threading import Thread
+from Auth import authenticate
 
 app = Flask(__name__)
 sock = SocketIO(app)
+
+operatingMode = "home"
 
 @app.route("/")
 def serve_root():
@@ -16,9 +19,9 @@ def serve_root():
 
 @app.route("/match")
 def serve_status():
-    team = request.args.get("auth", default=-1, type=int)
+    team = authenticate(request.args.get("auth", default=""), operatingMode)
     return jsonify({
-        "mode": "home",
+        "mode": operatingMode,
         "match": 1,
         "matchStart": True,
         "timeRemain": 99999999,
@@ -64,7 +67,7 @@ def serve_fares_normal():
 
 @app.route("/fares/claim/<int:idx>")
 def claim_fare(idx: int):
-    team = request.args.get("auth", default=-1, type=int)
+    team = authenticate(request.args.get("auth", default=""), operatingMode)
     with FMS.mutex:
         success = False
         message = ""

@@ -36,7 +36,7 @@ function generateFareElement(fare, id){
 }
 
 async function updateFares(){
-    let req = await fetch("http://localhost:5000/fares?all=true");
+    let req = await fetch("http://localhost:5000/dashboard/fares");
     let data = await req.json();
 
     for(var fare of data){
@@ -101,7 +101,7 @@ function generateTeamElement(team, id) {
 }
 
 async function updateTeams(){
-    let req = await fetch("http://localhost:5000/teams");
+    let req = await fetch("http://localhost:5000/dashboard/teams");
     let data = await req.json();
 
     for(var team of data){

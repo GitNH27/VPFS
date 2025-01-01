@@ -68,6 +68,30 @@ class Fare:
             team.karma += self.compute_karma()
             self.paid = True
 
+    def to_json_dict(self, idx: int, extended: bool):
+        data = {
+            "id": idx,
+            "modifiers": 0,
+            "src": {
+                "x": self.src.x,
+                "y": self.src.y
+            },
+            "dest": {
+                "x": self.dest.x,
+                "y": self.dest.y
+            },
+            "claimed": self.team is not None,
+            "expiry": self.expiry,
+        }
+        if extended:
+            data["active"] = self.isActive
+            data["team"] = self.team
+            data["inPosition"] = self.inPosition
+            data["pickedUp"] = self.pickedUp
+            data["completed"] = self.completed
+            data["paid"] = self.paid
+        return data
+
     def periodic(self, teams : [Team]):
         """
         Update phases of the fare

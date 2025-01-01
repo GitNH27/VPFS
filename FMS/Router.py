@@ -14,7 +14,19 @@ sock = SocketIO(app)
 def serve_root():
     return "FMS is alive"
 
-@app.route("/teams")
+@app.route("/match")
+def serve_status():
+    team = request.args.get("auth", default=-1, type=int)
+    return jsonify({
+        "mode": "home",
+        "match": 1,
+        "matchStart": True,
+        "timeRemain": 99999999,
+        "inMatch": True,
+        "team": team,
+    })
+
+@app.route("/dashboard/teams")
 def serve_teams():
     data = []
     with FMS.mutex:
@@ -33,41 +45,32 @@ def serve_teams():
             })
     return jsonify(data)
 
-@app.route("/fares")
-def serve_fares():
+def serve_fares(extended: bool, include_expired: bool):
     data = []
-    allOpt = request.args.get("all", default=False, type=lambda st: st.lower() == "true")
     with FMS.mutex:
         # Create copied list of data with desired information
         for idx, fare in enumerate(FMS.fares):
-            if fare.isActive or allOpt:
-                data.append({
-                    "id": idx,
-                    "src": {
-                        "x": fare.src.x,
-                        "y": fare.src.y
-                    },
-                    "dest": {
-                        "x": fare.dest.x,
-                        "y": fare.dest.y
-                    },
-                    "claimed": fare.team is not None,
-                    "team": fare.team,
-                    "active": fare.isActive,
-                    "expiry": fare.expiry,
-                    "inPosition": fare.inPosition,
-                    "pickedUp": fare.pickedUp,
-                    "completed": fare.completed,
-                    "paid": fare.paid
-                })
+            if fare.isActive or include_expired:
+                data.append(fare.to_json_dict(idx, extended))
         return jsonify(data)
 
-@app.route("/fares/claim/<int:idx>/<int:team>")
-def claim_fare(idx: int, team: int):
+@app.route("/dashboard/fares")
+def serve_fares_dashboard():
+    return serve_fares(True, True)
+
+@app.route("/fares")
+def serve_fares_normal():
+    return serve_fares(False, request.args.get("all", default=False, type=lambda st: st.lower() == "true"))
+
+@app.route("/fares/claim/<int:idx>")
+def claim_fare(idx: int):
+    team = request.args.get("auth", default=-1, type=int)
     with FMS.mutex:
         success = False
         message = ""
-        if team in FMS.teams.keys():
+        if team == -1:
+            message = "Authentication failed"
+        elif team in FMS.teams.keys():
             if idx < len(FMS.fares):
                 if FMS.fares[idx].claim_fare(team):
                     FMS.teams[team].currentFare = idx
@@ -95,24 +98,7 @@ def current_fare(team: int):
                 message = f"Team {team} does not have an active fare"
             else:
                 fare = FMS.fares[fare_idx]
-                fare_dict = {
-                    "id": fare_idx,
-                    "src": {
-                        "x": fare.src.x,
-                        "y": fare.src.y
-                    },
-                    "dest": {
-                        "x": fare.dest.x,
-                        "y": fare.dest.y
-                    },
-                    "claimed": fare.team is not None,
-                    "team": fare.team,
-                    "active": fare.isActive,
-                    "expiry": fare.expiry,
-                    "inPosition": fare.inPosition,
-                    "pickedUp": fare.pickedUp,
-                    "completed": fare.completed
-                }
+                fare_dict = fare.to_json_dict(fare_idx, True)
         else:
             message = f"Team {team} not in this match"
 

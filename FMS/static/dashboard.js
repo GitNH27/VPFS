@@ -19,6 +19,7 @@ function generateFareElement(fare, id){
     element.innerHTML = `
     <h3>${fare.id}:</h3>
     <span class="tofrom">${fare.src.x},${fare.src.y} -> ${fare.dest.x},${fare.dest.y}</span>
+    <span id="fare-${fare.id}-pay" style="padding:0">\$${fare.pay.toFixed(0)} / ${fare.reputation}%</span>
     <span id="fare-${fare.id}-claim" style="display: none" class="bg-neutral">Team</span>
     <span id="fare-${fare.id}-pickedUp" style="display:none" class="bg-ok">Picked Up</span>
     <span id="fare-${fare.id}-completed" style="display:none" class="bg-ok">Completed</span>

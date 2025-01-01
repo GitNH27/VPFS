@@ -82,6 +82,8 @@ class Fare:
             },
             "claimed": self.team is not None,
             "expiry": self.expiry,
+            "pay": self.compute_fare(),
+            "reputation": self.compute_karma()
         }
         if extended:
             data["active"] = self.isActive

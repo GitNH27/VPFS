@@ -42,17 +42,22 @@ class Fare:
         # TODO: Implement
         return 5
 
-    def claim_fare(self, team : int) -> bool:
+    def claim_fare(self, idx: int, team: Team) -> str | None:
         """
         Claim the fare for a team
+        :param idx: Index of the fare
         :param team: To claim fare for
-        :return: True if fare claimed successfully
+        :return: Error message, None if successful
         """
         # Claim if not already claimed
-        if self.team is None:
-            self.team = team
-            return True
-        return False
+        if self.team is not None:
+            return f"Fare {idx} already claimed"
+        if not self.isActive:
+            return f"Fare {idx} is expired"
+
+        self.team = team.number
+        team.currentFare = idx
+        return None
 
     def pay_fare(self, teams : [Team]):
         """
@@ -94,7 +99,7 @@ class Fare:
             data["paid"] = self.paid
         return data
 
-    def periodic(self, teams : [Team]):
+    def periodic(self, number: int, teams: [Team]):
         """
         Update phases of the fare
         Checks team position to determine if they are at start/destination, and if dropoff/pickup should occur
@@ -113,6 +118,10 @@ class Fare:
             return
 
         team = teams[self.team]
+
+        # Set inactive if the team takes another fare
+        if not team.currentFare == number:
+            self.isActive = False
 
         # Check phase
         if self.pickedUp is False:

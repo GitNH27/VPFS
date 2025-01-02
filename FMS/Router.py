@@ -75,8 +75,7 @@ def claim_fare(idx: int):
             message = "Authentication failed"
         elif team in FMS.teams.keys():
             if idx < len(FMS.fares):
-                if FMS.fares[idx].claim_fare(team):
-                    FMS.teams[team].currentFare = idx
+                if FMS.fares[idx].claim_fare(idx, FMS.teams[team]):
                     success = True
                 else:
                     message = "Fare already claimed"

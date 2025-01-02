@@ -11,7 +11,12 @@ from Auth import authenticate
 app = Flask(__name__)
 sock = SocketIO(app)
 
-operatingMode = "home"
+operatingMode = "lab"
+
+app.app_context().push()
+if operatingMode == "lab":
+    import LabTMS
+    LabTMS.IDK = ""
 
 @app.route("/")
 def serve_root():

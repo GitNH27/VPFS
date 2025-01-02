@@ -56,8 +56,8 @@ def periodic():
     while True:
         with mutex:
             # Update fare statuses
-            for fare in fares:
-                fare.periodic(teams)
+            for idx, fare in enumerate(fares):
+                fare.periodic(idx, teams)
 
             # Generate a new fare if needed
             if do_generation():

@@ -42,17 +42,22 @@ class Fare:
         # TODO: Implement
         return 5
 
-    def claim_fare(self, team : int) -> bool:
+    def claim_fare(self, idx: int, team: Team) -> str | None:
         """
         Claim the fare for a team
+        :param idx: Index of the fare
         :param team: To claim fare for
-        :return: True if fare claimed successfully
+        :return: Error message, None if successful
         """
         # Claim if not already claimed
-        if self.team is None:
-            self.team = team
-            return True
-        return False
+        if self.team is not None:
+            return f"Fare {idx} already claimed"
+        if not self.isActive:
+            return f"Fare {idx} is expired"
+
+        self.team = team.number
+        team.currentFare = idx
+        return None
 
     def pay_fare(self, teams : [Team]):
         """
@@ -68,7 +73,33 @@ class Fare:
             team.karma += self.compute_karma()
             self.paid = True
 
-    def periodic(self, teams : [Team]):
+    def to_json_dict(self, idx: int, extended: bool):
+        data = {
+            "id": idx,
+            "modifiers": 0,
+            "src": {
+                "x": self.src.x,
+                "y": self.src.y
+            },
+            "dest": {
+                "x": self.dest.x,
+                "y": self.dest.y
+            },
+            "claimed": self.team is not None,
+            "expiry": self.expiry,
+            "pay": self.compute_fare(),
+            "reputation": self.compute_karma()
+        }
+        if extended:
+            data["active"] = self.isActive
+            data["team"] = self.team
+            data["inPosition"] = self.inPosition
+            data["pickedUp"] = self.pickedUp
+            data["completed"] = self.completed
+            data["paid"] = self.paid
+        return data
+
+    def periodic(self, number: int, teams: [Team]):
         """
         Update phases of the fare
         Checks team position to determine if they are at start/destination, and if dropoff/pickup should occur
@@ -87,6 +118,10 @@ class Fare:
             return
 
         team = teams[self.team]
+
+        # Set inactive if the team takes another fare
+        if not team.currentFare == number:
+            self.isActive = False
 
         # Check phase
         if self.pickedUp is False:

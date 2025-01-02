@@ -19,6 +19,7 @@ function generateFareElement(fare, id){
     element.innerHTML = `
     <h3>${fare.id}:</h3>
     <span class="tofrom">${fare.src.x},${fare.src.y} -> ${fare.dest.x},${fare.dest.y}</span>
+    <span id="fare-${fare.id}-pay" style="padding:0">\$${fare.pay.toFixed(0)} / ${fare.reputation}%</span>
     <span id="fare-${fare.id}-claim" style="display: none" class="bg-neutral">Team</span>
     <span id="fare-${fare.id}-pickedUp" style="display:none" class="bg-ok">Picked Up</span>
     <span id="fare-${fare.id}-completed" style="display:none" class="bg-ok">Completed</span>
@@ -36,7 +37,7 @@ function generateFareElement(fare, id){
 }
 
 async function updateFares(){
-    let req = await fetch("http://localhost:5000/fares?all=true");
+    let req = await fetch("http://localhost:5000/dashboard/fares");
     let data = await req.json();
 
     for(var fare of data){
@@ -101,7 +102,7 @@ function generateTeamElement(team, id) {
 }
 
 async function updateTeams(){
-    let req = await fetch("http://localhost:5000/teams");
+    let req = await fetch("http://localhost:5000/dashboard/teams");
     let data = await req.json();
 
     for(var team of data){

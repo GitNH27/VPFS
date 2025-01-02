@@ -170,6 +170,7 @@ async function configureWindow(){
     let data = await res.json();
 
     opMode = data.mode;
+    document.getElementById("title").innerText = `${opMode} Dashboard`;
 
     if(opMode == LAB_OP){
         // Show add team buttons

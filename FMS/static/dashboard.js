@@ -113,12 +113,15 @@ async function updateTeams(){
     let req = await fetch("http://localhost:5000/dashboard/teams");
     let data = await req.json();
 
+    activeIDs = []
+
     for(var team of data){
         let num = team.number;
         let element = document.getElementById(`team-${num}`);
         if(element == null){
             element = generateTeamElement(team, `team-${num}`)
         }
+        activeIDs.push(element.id)
 
         document.getElementById(`team-${team.number}-money`).innerText = `\$${team.money.toFixed(0)}`;
         document.getElementById(`team-${team.number}-reputation`).innerText = `${team.karma}%`;
@@ -140,6 +143,16 @@ async function updateTeams(){
             posttime.style.color = "red";
         else
             posttime.style.color = "unset";
+    }
+
+    // Prune teams no longer active
+    for(var child of teamsDiv.childNodes){
+        // Find team elements, and remove those that aren't wanted
+        if(child.id != undefined && child.id.startsWith("team")){
+            if(activeIDs.indexOf(child.id) == -1){
+                teamsDiv.removeChild(child);
+            }
+        }
     }
 }
 

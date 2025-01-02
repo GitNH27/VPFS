@@ -25,7 +25,7 @@ def serve_status():
         "match": 1,
         "matchStart": True,
         "timeRemain": 99999999,
-        "inMatch": True,
+        "inMatch": team in FMS.teams,
         "team": team,
     })
 

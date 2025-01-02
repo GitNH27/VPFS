@@ -30,8 +30,15 @@ h3 {
     padding: 1em;
     display: grid;
     grid-template-areas: 
-        "title title"
-        "money position"
+        "title title buttons"
+        "money position buttons"
+}
+
+.team .team-buttons {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    grid-area: buttons;
 }
 
 .fare {

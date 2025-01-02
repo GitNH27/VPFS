@@ -1,5 +1,10 @@
 var teamsDiv, activeFareDiv, pastFareDiv, pastFareDivider;
 
+var opMode = "";
+const LAB_OP = "lab";
+const HOME_OP = "home";
+const MATCH_OP = "match";
+
 function setVisibility(element, visible){
     if(!visible)
         element.style.display = "none"
@@ -95,6 +100,9 @@ function generateTeamElement(team, id) {
         Y <span id="team-${team.number}-y">${team.position.y.toFixed(2)}</span><br/>
         Last Update: <span id="team-${team.number}-postime">${team.lastPosUpdate}</span>
     </div>
+    <div style="grid-area: buttons;" class="team-buttons">
+        ${(opMode == LAB_OP? `<button onclick="removeTeam(${team.number})">Remove Team</button>` : "")} 
+    </div>
     `
 
     teamsDiv.appendChild(element);
@@ -135,11 +143,34 @@ async function updateTeams(){
     }
 }
 
+function addTeam(){
+    let input = document.getElementById("add-team-number");
+    fetch(`/Lab/AddTeam/${input.value}`);
+}
+function removeTeam(team){
+    fetch(`/Lab/RemoveTeam/${team}`);
+}
+
+async function configureWindow(){
+    // Use special -2 team auth for the dashboard
+    let res = await fetch("/match?auth=-2");
+    let data = await res.json();
+
+    opMode = data.mode;
+
+    if(opMode == LAB_OP){
+        // Show add team buttons
+        document.getElementById("lab-team-buttons").style.display = "unset"
+    }
+}
+
 window.onload = () => {
     activeFareDiv = document.getElementById("active-fares");
     pastFareDiv = document.getElementById("past-fares");
     pastFareDivider = document.getElementById("fare-divider");
     teamsDiv = document.getElementById("teams");
+
+    configureWindow();
 
     setInterval(() => {
         updateFares();

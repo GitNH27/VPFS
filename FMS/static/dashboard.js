@@ -163,8 +163,25 @@ function addTeam(){
 function removeTeam(team){
     fetch(`/Lab/RemoveTeam/${team}`);
 }
+function configureMatch(){
+    fetch("/Lab/ConfigMatch", {
+        method: "post",
+        headers: new Headers({'content-type': 'application/json'}),
+        body: JSON.stringify(
+            {
+                "number":parseInt(document.getElementById("match-num").value),
+                "duration":parseInt(document.getElementById("match-duration").value),
+            }
+        )
+    })
+}
+function startMatch(){
+    fetch("/Lab/StartMatch", {
+        method: "post"
+    })
+}
 
-async function configureWindow(){
+async function updateMatchInfo(){
     // Use special -2 team auth for the dashboard
     let res = await fetch("/match?auth=-2");
     let data = await res.json();
@@ -176,6 +193,15 @@ async function configureWindow(){
         // Show add team buttons
         document.getElementById("lab-team-buttons").style.display = "unset"
     }
+
+    if(!data.matchStart){
+        document.getElementById("match-status").innerText = `Match ${data.match}, Ready`
+    } else {
+        if(data.timeRemain < 0)
+            document.getElementById("match-status").innerText = `Match ${data.match}, Finished`
+        else
+            document.getElementById("match-status").innerText = `Match ${data.match}, ${data.timeRemain.toFixed(0)}s`
+    }
 }
 
 window.onload = () => {
@@ -184,10 +210,9 @@ window.onload = () => {
     pastFareDivider = document.getElementById("fare-divider");
     teamsDiv = document.getElementById("teams");
 
-    configureWindow();
-
     setInterval(() => {
         updateFares();
+        updateMatchInfo();
     }, 1000);
     setInterval(() => {
         updateTeams();

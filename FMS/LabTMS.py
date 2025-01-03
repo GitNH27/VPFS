@@ -1,6 +1,6 @@
 import FMS
 from Team import Team
-from flask import current_app as app
+from flask import current_app as app, request
 
 IDK = "IDK"
 
@@ -21,3 +21,15 @@ def serve_remove_team(team: int):
             FMS.teams.pop(team)
             return f"Removed team {team}"
         return f"No team {team} to remove"
+
+@app.route("/Lab/ConfigMatch", methods=["post"])
+def serve_config_match():
+    num = request.json["number"]
+    duration = request.json["duration"]
+    FMS.config_match(num, duration)
+    return ""
+
+@app.route("/Lab/StartMatch", methods=["post"])
+def serve_start_match():
+    FMS.start_match()
+    return ""

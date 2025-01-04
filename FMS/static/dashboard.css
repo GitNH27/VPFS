@@ -1,8 +1,8 @@
 body {
     font-family: sans-serif;
     display: grid;
-    grid-template-areas: "title . fares" "teams . fares";
-    grid-template-rows: auto 100%;
+    grid-template-areas: "title . fares" "match . fares" "teams . fares";
+    grid-template-rows: auto auto 100%;
     grid-template-columns: 35% 10% 55%;
     padding: 2em;
 }
@@ -30,8 +30,15 @@ h3 {
     padding: 1em;
     display: grid;
     grid-template-areas: 
-        "title title"
-        "money position"
+        "title title buttons"
+        "money position buttons"
+}
+
+.team .team-buttons {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    grid-area: buttons;
 }
 
 .fare {

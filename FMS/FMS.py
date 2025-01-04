@@ -6,6 +6,11 @@ from Fare import Fare
 from Team import Team
 from threading import Lock
 
+matchRunning = False
+matchNum = 0
+matchDuration = 0
+matchEndTime = 0
+
 fares : list[Fare] = [ ]
 mutex = Lock()
 
@@ -68,3 +73,17 @@ def periodic():
                 else:
                     print("Failed faregen")
         time.sleep(0.02)
+
+def config_match(num: int, duration: int):
+    global matchNum, matchDuration
+    with mutex:
+        if not matchRunning:
+            matchNum = num
+            matchDuration = duration
+
+def start_match():
+    global matchEndTime, matchRunning
+    with mutex:
+        if not matchRunning:
+            matchEndTime = time.time() + matchDuration
+            matchRunning = True

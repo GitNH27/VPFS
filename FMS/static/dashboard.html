@@ -6,10 +6,29 @@
         <script src="/static/dashboard.js"></script>
     </head>
     <body>
-        <h1 style="grid-area:title">Dashboard</h1>
+        <h1 style="grid-area:title" id="title">Dashboard</h1>
+        <div style="grid-area:match">
+            <span id="match-status">
+                Match ##, ###s
+            </span>
+            <span id="match-config">
+                <br/>
+                Num:
+                <input id="match-num" type="number" style="width:5em"/>
+                Duration:
+                <input id="match-duration" type="number" style="width:5em"/>
+                <button onclick="configureMatch()">Apply</button>
+            </span>
+            <button onclick="startMatch()">Start Match</button>
+        </div>
         <div style="grid-area:teams">
             <h2>Teams</h2>
             <div id="teams">
+                <div id="lab-team-buttons" style="display:none">
+                    Add Team:
+                    <input id="add-team-number" type="number" size="4" />
+                    <button onclick="addTeam()">Add</button>
+                </div>
                 <!-- <div class="team" id="team-7">
                     <h3 style="grid-area: title;">7 - Team Name</h3>
                     <div style="grid-area: money;">

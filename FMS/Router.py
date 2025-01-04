@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, jsonify, request
 from flask_socketio import SocketIO
 from jsonschema.exceptions import ValidationError
@@ -11,7 +13,12 @@ from Auth import authenticate
 app = Flask(__name__)
 sock = SocketIO(app)
 
-operatingMode = "home"
+operatingMode = "lab"
+
+app.app_context().push()
+if operatingMode == "lab":
+    import LabTMS
+    LabTMS.IDK = ""
 
 @app.route("/")
 def serve_root():
@@ -20,14 +27,15 @@ def serve_root():
 @app.route("/match")
 def serve_status():
     team = authenticate(request.args.get("auth", default=""), operatingMode)
-    return jsonify({
-        "mode": operatingMode,
-        "match": 1,
-        "matchStart": True,
-        "timeRemain": 99999999,
-        "inMatch": team in FMS.teams,
-        "team": team,
-    })
+    with FMS.mutex:
+        return jsonify({
+            "mode": operatingMode,
+            "match": FMS.matchNum,
+            "matchStart": FMS.matchRunning,
+            "timeRemain": FMS.matchEndTime - time.time(),
+            "inMatch": team in FMS.teams,
+            "team": team,
+        })
 
 @app.route("/dashboard/teams")
 def serve_teams():

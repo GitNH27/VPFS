@@ -1,5 +1,10 @@
 var teamsDiv, activeFareDiv, pastFareDiv, pastFareDivider;
 
+var opMode = "";
+const LAB_OP = "lab";
+const HOME_OP = "home";
+const MATCH_OP = "match";
+
 function setVisibility(element, visible){
     if(!visible)
         element.style.display = "none"
@@ -95,6 +100,9 @@ function generateTeamElement(team, id) {
         Y <span id="team-${team.number}-y">${team.position.y.toFixed(2)}</span><br/>
         Last Update: <span id="team-${team.number}-postime">${team.lastPosUpdate}</span>
     </div>
+    <div style="grid-area: buttons;" class="team-buttons">
+        ${(opMode == LAB_OP? `<button onclick="removeTeam(${team.number})">Remove Team</button>` : "")} 
+    </div>
     `
 
     teamsDiv.appendChild(element);
@@ -105,12 +113,15 @@ async function updateTeams(){
     let req = await fetch("http://localhost:5000/dashboard/teams");
     let data = await req.json();
 
+    activeIDs = []
+
     for(var team of data){
         let num = team.number;
         let element = document.getElementById(`team-${num}`);
         if(element == null){
             element = generateTeamElement(team, `team-${num}`)
         }
+        activeIDs.push(element.id)
 
         document.getElementById(`team-${team.number}-money`).innerText = `\$${team.money.toFixed(0)}`;
         document.getElementById(`team-${team.number}-reputation`).innerText = `${team.karma}%`;
@@ -133,6 +144,64 @@ async function updateTeams(){
         else
             posttime.style.color = "unset";
     }
+
+    // Prune teams no longer active
+    for(var child of teamsDiv.childNodes){
+        // Find team elements, and remove those that aren't wanted
+        if(child.id != undefined && child.id.startsWith("team")){
+            if(activeIDs.indexOf(child.id) == -1){
+                teamsDiv.removeChild(child);
+            }
+        }
+    }
+}
+
+function addTeam(){
+    let input = document.getElementById("add-team-number");
+    fetch(`/Lab/AddTeam/${input.value}`);
+}
+function removeTeam(team){
+    fetch(`/Lab/RemoveTeam/${team}`);
+}
+function configureMatch(){
+    fetch("/Lab/ConfigMatch", {
+        method: "post",
+        headers: new Headers({'content-type': 'application/json'}),
+        body: JSON.stringify(
+            {
+                "number":parseInt(document.getElementById("match-num").value),
+                "duration":parseInt(document.getElementById("match-duration").value),
+            }
+        )
+    })
+}
+function startMatch(){
+    fetch("/Lab/StartMatch", {
+        method: "post"
+    })
+}
+
+async function updateMatchInfo(){
+    // Use special -2 team auth for the dashboard
+    let res = await fetch("/match?auth=-2");
+    let data = await res.json();
+
+    opMode = data.mode;
+    document.getElementById("title").innerText = `${opMode} Dashboard`;
+
+    if(opMode == LAB_OP){
+        // Show add team buttons
+        document.getElementById("lab-team-buttons").style.display = "unset"
+    }
+
+    if(!data.matchStart){
+        document.getElementById("match-status").innerText = `Match ${data.match}, Ready`
+    } else {
+        if(data.timeRemain < 0)
+            document.getElementById("match-status").innerText = `Match ${data.match}, Finished`
+        else
+            document.getElementById("match-status").innerText = `Match ${data.match}, ${data.timeRemain.toFixed(0)}s`
+    }
 }
 
 window.onload = () => {
@@ -143,6 +212,7 @@ window.onload = () => {
 
     setInterval(() => {
         updateFares();
+        updateMatchInfo();
     }, 1000);
     setInterval(() => {
         updateTeams();

@@ -22,7 +22,7 @@ if operatingMode == "lab":
 
 @app.route("/")
 def serve_root():
-    return "FMS is alive"
+    return "VPFS is alive"
 
 @app.route("/match")
 def serve_status():

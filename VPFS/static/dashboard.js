@@ -100,6 +100,7 @@ function generateTeamElement(team, id) {
         Y <span id="team-${team.number}-y">${team.position.y.toFixed(2)}</span><br/>
         Last Update: <span id="team-${team.number}-postime">${team.lastPosUpdate}</span>
     </div>
+    <div style="grid-area:status;text-align:right" id="team-${team.number}-status"></div>
     <div style="grid-area: buttons;" class="team-buttons">
         ${(opMode == LAB_OP? `<button onclick="removeTeam(${team.number})">Remove Team</button>` : "")} 
     </div>
@@ -143,6 +144,21 @@ async function updateTeams(){
             posttime.style.color = "red";
         else
             posttime.style.color = "unset";
+
+        let status = document.getElementById(`team-${team.number}-status`)
+        timeDelta = -getTimeUntil(team.lastStatus) * 1000;
+
+        if(timeDelta > 10000000)
+            status.innerHTML = "Not Connected"
+        else if (timeDelta > 10000)
+            status.innerText = `Last Ping: ${(timeDelta/1000).toFixed(0)}s`;
+        else
+            status.innerText = `Last Ping: ${timeDelta.toFixed(0)}ms`;
+
+        if(timeDelta > 5000)
+            status.style.color = "red";
+        else
+            status.style.color = "unset";
     }
 
     // Prune teams no longer active

@@ -30,7 +30,7 @@ h3 {
     padding: 1em;
     display: grid;
     grid-template-areas: 
-        "title title buttons"
+        "title title status"
         "money position buttons"
 }
 

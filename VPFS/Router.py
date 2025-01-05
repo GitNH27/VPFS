@@ -27,6 +27,9 @@ def serve_root():
 @app.route("/match")
 def serve_status():
     team = authenticate(request.args.get("auth", default=""), operatingMode)
+    # Update last poll time
+    if team in FMS.teams:
+        FMS.teams[team].lastStatus = time.time()
     with FMS.mutex:
         return jsonify({
             "mode": operatingMode,
@@ -52,7 +55,8 @@ def serve_teams():
                     "x": team.pos.x,
                     "y": team.pos.y
                 },
-                "lastPosUpdate": team.lastPosUpdate
+                "lastPosUpdate": team.lastPosUpdate,
+                "lastStatus": team.lastStatus
             })
     return jsonify(data)
 

@@ -22,7 +22,7 @@ if operatingMode == "lab":
 
 @app.route("/")
 def serve_root():
-    return "VPFS is alive"
+    return "VPFS is alive\n"
 
 @app.route("/match")
 def serve_status():
@@ -180,4 +180,4 @@ def whereami_update(json):
 
 if __name__ == "__main__":
     Thread(target=FMS.periodic, daemon=True).start()
-    sock.run(app, allow_unsafe_werkzeug=True)
+    sock.run(app, host='0.0.0.0', allow_unsafe_werkzeug=True)

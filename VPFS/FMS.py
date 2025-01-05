@@ -1,4 +1,5 @@
 import time
+from getpass import fallback_getpass
 
 from Faregen import generate_fare
 from Utils import Point
@@ -75,11 +76,14 @@ def periodic():
         time.sleep(0.02)
 
 def config_match(num: int, duration: int):
-    global matchNum, matchDuration
+    global matchNum, matchDuration, matchRunning, matchEndTime
     with mutex:
-        if not matchRunning:
+        # Only apply when match is finished
+        if matchEndTime < time.time():
             matchNum = num
             matchDuration = duration
+            matchEndTime = 0
+            matchRunning = False
 
 def start_match():
     global matchEndTime, matchRunning
@@ -87,3 +91,9 @@ def start_match():
         if not matchRunning:
             matchEndTime = time.time() + matchDuration
             matchRunning = True
+
+def cancel_match():
+    global matchEndTime
+    with mutex:
+        if matchRunning:
+            matchEndTime = 0

@@ -26,6 +26,7 @@ def serve_remove_team(team: int):
 def serve_config_match():
     num = request.json["number"]
     duration = request.json["duration"]
+    FMS.cancel_match()
     FMS.config_match(num, duration)
     return ""
 

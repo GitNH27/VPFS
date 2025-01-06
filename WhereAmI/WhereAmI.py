@@ -88,9 +88,11 @@ while True:
     detections = detector.detect(gray, True, (950, 950, 800, 455), 0.1)
     frame = show_tags(frame, detections)
     cameraPos = utils.computeCameraPos(detections)
-    tagPoses = utils.computeTagPoses(detections, cameraPos)
-    # Send updates to VPFS
-    VPFS.send_update(tagPoses)
+    # Check that there was good reference tag detection
+    if cameraPos is not None:
+        tagPoses = utils.computeTagPoses(detections, cameraPos)
+        # Send updates to VPFS
+        VPFS.send_update(tagPoses)
 
     # Compute FPS
     frameTime = time.time() - lastTime

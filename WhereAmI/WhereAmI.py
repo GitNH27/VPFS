@@ -1,4 +1,5 @@
 import sys
+from RefTags import refTags
 
 import cv2
 import time
@@ -52,9 +53,6 @@ def show_tags(img, detections):
         img = cv2.rectangle(img, (int(tag.corners[0][0]), int(tag.corners[0][1])), (int(tag.corners[2][0]), int(tag.corners[2][1])), (0, 0, 255), 2)
     return img
 
-refTags = {
-        0: (0,0,0),
-        }
 def computeCameraPos(detections):
     camPos = (999, 999, 999)
     for det in detections:

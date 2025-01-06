@@ -10,6 +10,17 @@ from pupil_apriltags import Detector
 
 import utils
 
+# Camera settings for Desktop mode
+camera_id = 0
+camera_width = 1600
+camera_height = 900
+# Intrinsics used in detection
+cam_fx = 950
+cam_fy = 950
+cam_cx = 800
+cam_cy = 455
+camera_intrinsics = (cam_fx, cam_fy, cam_cx, cam_cy)
+
 detector = Detector(
     nthreads=4,
     quad_decimate=1,
@@ -38,10 +49,10 @@ if jetson:
     os.system("v4l2-ctl -d /dev/video0 -C focus_absolute")
     cam = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 else:
-    cam = cv2.VideoCapture(0) # this is the magic!
+    cam = cv2.VideoCapture(camera_id) # this is the magic!
 
-    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1600)
-    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 900)
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
 
 frameWidth = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
 frameHeight = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -85,7 +96,7 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect tags
-    detections = detector.detect(gray, True, (950, 950, 800, 455), 0.1)
+    detections = detector.detect(gray, True, camera_intrinsics, 0.1)
     frame = show_tags(frame, detections)
     cameraPos = utils.computeCameraPos(detections)
     # Check that there was good reference tag detection

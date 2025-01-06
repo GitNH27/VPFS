@@ -100,6 +100,7 @@ while True:
     frame = show_tags(frame, detections)
     cameraPos = utils.computeCameraPos(detections)
     # Check that there was good reference tag detection
+    tagPoses = []
     if cameraPos is not None:
         tagPoses = utils.computeTagPoses(detections, cameraPos)
         # Send updates to VPFS

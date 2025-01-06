@@ -1,0 +1,72 @@
+<!doctype HTML>
+<html>
+    <head>
+        <title>Dashboard | FMS</title>
+        <link rel="stylesheet" type="text/css" href="/static/dashboard.css" />
+        <script src="/static/dashboard.js"></script>
+    </head>
+    <body>
+        <h1 style="grid-area:title" id="title">Dashboard</h1>
+        <div style="grid-area:match">
+            <span id="match-status">
+                Match ##, ###s
+            </span>
+            <span id="match-config">
+                <br/>
+                Num:
+                <input id="match-num" type="number" style="width:5em"/>
+                Duration:
+                <input id="match-duration" type="number" style="width:5em"/>
+                <button onclick="configureMatch()">Apply</button>
+            </span>
+            <button onclick="startMatch()">Start Match</button>
+        </div>
+        <div style="grid-area:teams">
+            <h2>Teams</h2>
+            <div id="teams">
+                <div id="lab-team-buttons" style="display:none">
+                    Add Team:
+                    <input id="add-team-number" type="number" size="4" />
+                    <button onclick="addTeam()">Add</button>
+                </div>
+                <!-- <div class="team" id="team-7">
+                    <h3 style="grid-area: title;">7 - Team Name</h3>
+                    <div style="grid-area: money;">
+                        Money: <span id="team-7-money">5000</span><br/>
+                        Reputation: <span id="team-7-reputation">100%</span><br/>
+                        Current Fare: <span id="team-7-fare">None</span>
+                    </div>
+                    <div style="grid-area: position;">
+                        X <span id="team-7-x">100</span><br/>
+                        Y <span id="team-7-y">200</span><br/>
+                        Last Update: <span id="team-7-postime">100s</span>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+        <div style="grid-area:fares">
+            <h2>Active Fares</h2>
+            <div id="active-fares">
+                <!-- <div class="fare" id="fare-1">
+                    <h3>1:</h3>
+                    <span class="tofrom">5,5 -> 0,0</span>
+                    <span id="fare-1-claim">Team 5</span>
+                    <span id="fare-1-inPosition" class="bg-warn">In Position</span>
+                    <span id="fare-1-pickedUp" class="bg-ok">Picked Up</span>
+                    <span id="fare-1-completed" class="bg-ok">Completed</span>
+                    <span id="fare-1-paid" class="bg-ok">Paid</span>
+                    <span id="fare-1-expiry">Expires in 100s</span>
+                </div> -->
+            </div>
+            <h2>Past Fares</h2>
+            <div id="past-fares">
+                <div id="fare-divider"></div>
+                <!-- <div class="fare" id="fare-2">
+                    <h3>2:</h3>
+                    <span class="tofrom">5,5 -> 0,0</span>
+                    <span id="fare-1-expiry">Expired</span>
+                </div> -->
+            </div>
+        </div>
+    </body>
+</html>

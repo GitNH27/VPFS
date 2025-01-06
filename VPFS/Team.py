@@ -10,6 +10,7 @@ class Team:
         self.currentFare : int or None = None
         self.pos = Point(0, 0)
         self.lastPosUpdate = 0
+        self.lastStatus = 0
 
     def update_position(self, pos : Point):
         self.pos = pos

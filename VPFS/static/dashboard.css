@@ -1,0 +1,65 @@
+body {
+    font-family: sans-serif;
+    display: grid;
+    grid-template-areas: "title . fares" "match . fares" "teams . fares";
+    grid-template-rows: auto auto 100%;
+    grid-template-columns: 35% 10% 55%;
+    padding: 2em;
+}
+
+h3 {
+    margin: 0
+}
+
+.bg-neutral {
+    background-color: lightgrey !important;
+    color: black;
+}
+
+.bg-warn {
+    background-color: orange !important;
+    color: black;
+}
+
+.bg-ok {
+    background-color: green !important;
+    color: white;
+}
+
+.team {
+    padding: 1em;
+    display: grid;
+    grid-template-areas: 
+        "title title status"
+        "money position buttons"
+}
+
+.team .team-buttons {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    grid-area: buttons;
+}
+
+.fare {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+}
+
+.fare>h3 {
+    padding-left: 0.5em;
+}
+
+.fare span {
+    padding: 0.25em 0.75em;
+    border-radius: 0.5em;
+}
+
+#fare-divider {
+    height: 1px;
+    width: 100%;
+    background-color: black;
+    margin: 5px 0;
+}

@@ -1,5 +1,6 @@
 import sys
 from RefTags import refTags
+import VPFS
 
 import cv2
 import time
@@ -88,6 +89,8 @@ while True:
     frame = show_tags(frame, detections)
     cameraPos = utils.computeCameraPos(detections)
     tagPoses = utils.computeTagPoses(detections, cameraPos)
+    # Send updates to VPFS
+    VPFS.send_update(tagPoses)
 
     # Compute FPS
     frameTime = time.time() - lastTime

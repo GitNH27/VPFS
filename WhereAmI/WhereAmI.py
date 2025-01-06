@@ -65,15 +65,6 @@ def show_tags(img, detections):
         img = cv2.rectangle(img, (int(tag.corners[0][0]), int(tag.corners[0][1])), (int(tag.corners[2][0]), int(tag.corners[2][1])), (0, 0, 255), 2)
     return img
 
-def computeCameraPos(detections):
-    camPos = (999, 999, 999)
-    for det in detections:
-        if det.tag_id in refTags:
-            refPos = refTags[det.tag_id]
-            tagPos = (det.pose_t[0][0], det.pose_t[1][0], det.pose_t[2][0])
-            camPos = (refPos[0]-tagPos[0], refPos[1]-tagPos[1], refPos[2]-tagPos[2])
-    return camPos
-
 if not cam.isOpened():
     print("Cannot open camera")
     exit()
@@ -98,11 +89,11 @@ while True:
     # Detect tags
     detections = detector.detect(gray, True, camera_intrinsics, 0.1)
     frame = show_tags(frame, detections)
-    cameraPos = utils.computeCameraPos(detections)
+    cameraPos = utils.compute_camera_pos(detections)
     # Check that there was good reference tag detection
     tagPoses = []
     if cameraPos is not None:
-        tagPoses = utils.computeTagPoses(detections, cameraPos)
+        tagPoses = utils.compute_tag_poses(detections, cameraPos)
         # Send updates to VPFS
         VPFS.send_update(tagPoses)
 

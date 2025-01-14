@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import *
 from typing import Dict, Tuple
+import RefTags
 
 # See PhotonVision CMP 2024 talk, starting around 20:00
 
@@ -8,15 +9,7 @@ from typing import Dict, Tuple
 
 # World-To-Tag transformation matrices
 # Rotations are all zero to make life simple
-refTags = {
-    0: np.array([
-        [1,0,0,0],
-        [0,1,0,0],
-        [0,0,1,0],
-        [0,0,0,1]
-        ])
-
-}
+refTags = RefTags.refTags
 
 def det_to_transform_mat(detection) -> ArrayLike:
     """
@@ -43,7 +36,7 @@ def compute_camera_pos(detections) -> ArrayLike or None:
     for det in detections:
         if det.tag_id in refTags:
             cam_to_tag = det_to_transform_mat(det)
-            map_to_cam = np.matmul(refTags[det.tag_id], np.linalg.inv(cam_to_tag))
+            map_to_cam = np.matmul(refTags[det.tag_id].mat, np.linalg.inv(cam_to_tag))
     
     return map_to_cam
 

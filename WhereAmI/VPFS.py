@@ -24,7 +24,7 @@ def disconnect():
     print("Disconnected from VPFS")
 
 # Localhost server works this is the same computer as VPFS
-sock.connect("http://127.0.0.1:5000/")
+# sock.connect("http://127.0.0.1:5000/")
 
 def send_update(tagPoses: Dict[int, Tuple[int, int, int]]):
     if not connected:

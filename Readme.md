@@ -19,12 +19,27 @@ curl localhost:5000
 ```
 And you should see the response `VFPS is alive`
 
-### Setup with Manual Install
-The project was designed for Python 3.12. Using either a fresh install or conda environment, you can install the required pip packages by running 
+### Setup with Manual Install (venv)
+The project was designed for Python 3.12. To check your installation, run
+```commandline
+py --list
+```
+If Python 3.12 is not listed, you will need to install it. Note that this may affect which python is your system default if you have other projects that care.
+
+With Python 3.12 installed, open a terminal in your downloaded copy of the repository. 
+Create a venv (Virtual ENVironment), and then activate it using the following commands
+```commandline
+py -3.12 -m venv .venv-vpfs
+.\.venv-vpfs\Scripts\Activate.ps1
+
+(For the activation command, .ps1 file is used with powershell, .bat version for CMD)
+```
+If the activation is successful, you should see `(.venv-vpfs)` next to your command prompt.
+
+Now that the venv is active, we can install the needed pip packages.
 ```commandline
 pip install -r requirements.txt
 ```
-In the project's root directory.
 
 Now switch to the VPFS directory and start the program with the command.
 ```commandline

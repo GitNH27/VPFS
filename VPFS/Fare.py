@@ -5,8 +5,8 @@ from Team import Team
 import time
 
 POSITION_TOLERANCE = 0.15
-PICKUP_DURATION = 10
-DROPOFF_DURATION = 10
+PICKUP_DURATION = 5
+DROPOFF_DURATION = 5
 
 class Fare:
     def __init__(self, src : Point, dest: Point):
@@ -59,7 +59,7 @@ class Fare:
         team.currentFare = idx
         return None
 
-    def pay_fare(self, teams : [Team]):
+    def pay_fare(self, teams : list[Team]):
         """
         Pay the team their fare
         Will ensure that fare is completed and fare is not already paid
@@ -99,7 +99,7 @@ class Fare:
             data["paid"] = self.paid
         return data
 
-    def periodic(self, number: int, teams: [Team]):
+    def periodic(self, number: int, teams: list[Team]):
         """
         Update phases of the fare
         Checks team position to determine if they are at start/destination, and if dropoff/pickup should occur
@@ -130,7 +130,7 @@ class Fare:
                 self.inPosition = True
                 # If no timeout started, then start it
                 if self._phaseTimeout == -1:
-                    self._phaseTimeout = time.time() + 5
+                    self._phaseTimeout = time.time() + PICKUP_DURATION
                 # If timeout completed, then set picked up
                 elif self._phaseTimeout < time.time():
                     self.pickedUp = True
@@ -144,7 +144,7 @@ class Fare:
                 self.inPosition = True
                 # If no timeout started, then start it
                 if self._phaseTimeout == -1:
-                    self._phaseTimeout = time.time() + 5
+                    self._phaseTimeout = time.time() + DROPOFF_DURATION
                 # If timeout completed, then set fare completed
                 elif self._phaseTimeout < time.time():
                     self.completed = True

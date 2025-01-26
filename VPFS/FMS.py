@@ -1,11 +1,12 @@
 import time
-from getpass import fallback_getpass
 
 from Faregen import generate_fare
 from Utils import Point
 from Fare import Fare
 from Team import Team
 from threading import Lock
+
+from VPFS.Fare import FareType
 
 matchRunning = False
 matchNum = 0
@@ -23,7 +24,7 @@ points = [
     # Point(-5,0)
 ]
 for point in points:
-    fares.append(Fare(Point(0,0), point))
+    fares.append(Fare(Point(0,0), point, FareType.NORMAL))
 
 teams : {int : Team} = {
     3 : Team(3),

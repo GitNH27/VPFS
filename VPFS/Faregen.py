@@ -1,5 +1,5 @@
 from Utils import Point
-from Fare import Fare
+from Fare import Fare, FareType
 import random
 points = [
     Point(0,0),
@@ -50,5 +50,5 @@ def generate_fare(existingFares : [Fare]) -> Fare or None:
         success = True
 
     if success:
-        return Fare(p1, p2)
+        return Fare(p1, p2, FareType.NORMAL)
     return None

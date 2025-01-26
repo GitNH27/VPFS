@@ -1,6 +1,9 @@
 from Utils import Point
 from Fare import Fare, FareType
 import random
+
+from VPFS.FareProbability import FareProbability
+
 points = [
     Point(0,0),
     Point(1, 1),
@@ -50,5 +53,6 @@ def generate_fare(existingFares : [Fare]) -> Fare or None:
         success = True
 
     if success:
-        return Fare(p1, p2, FareType.NORMAL)
+        prob = FareProbability()
+        return Fare(p1, p2, prob.roll())
     return None

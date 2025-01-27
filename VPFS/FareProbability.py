@@ -16,6 +16,21 @@ class FareProbability:
                 FareType.SENIOR: senior
             }
 
+    @staticmethod
+    def merge(p1, p2):
+        return FareProbability(
+            p1._values[FareType.NORMAL] + p2._values[FareType.NORMAL],
+            p1._values[FareType.SUBSIDIZED] + p2._values[FareType.SUBSIDIZED],
+            p1._values[FareType.SENIOR] + p2._values[FareType.SENIOR],
+        )
+
+    def copy(self) -> Self:
+        return FareProbability(
+            self._values[FareType.NORMAL],
+            self._values[FareType.SUBSIDIZED],
+            self._values[FareType.SENIOR],
+        )
+
     def __getitem__(self, key: FareType):
         return self._values[key]
 

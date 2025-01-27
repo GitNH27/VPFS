@@ -1,22 +1,31 @@
+from attr import dataclass
+
 from Utils import Point
 from Fare import Fare, FareType
 import random
 
 from VPFS.FareProbability import FareProbability
 
-points = [
-    Point(0,0),
-    Point(1, 1),
-    Point(2, 2),
-    Point(3, 3),
-    Point(4, 4),
-    Point(5, 5),
-    Point(6, 6),
-    Point(7, 7),
-    Point(8, 8),
-    Point(9, 9),
-    Point(10, 10),
-    Point(11, 11)
+@dataclass
+class SpawnPoint:
+    point: Point
+    biases: FareProbability
+
+points : [SpawnPoint] = [
+    # This one always spawns seniors for reasons I guess
+    SpawnPoint(Point(0,0), FareProbability(0, 0, 1)),
+    # These two are always subsidized
+    SpawnPoint(Point(1, 1), FareProbability(0, 1, 1)),
+    SpawnPoint(Point(2, 2), FareProbability(0, 1, 1)),
+    SpawnPoint(Point(3, 3), FareProbability()),
+    SpawnPoint(Point(4, 4), FareProbability()),
+    SpawnPoint(Point(5, 5), FareProbability()),
+    SpawnPoint(Point(6, 6), FareProbability()),
+    SpawnPoint(Point(7, 7), FareProbability()),
+    SpawnPoint(Point(8, 8), FareProbability()),
+    SpawnPoint(Point(9, 9), FareProbability()),
+    SpawnPoint(Point(10, 10), FareProbability()),
+    SpawnPoint(Point(11, 11), FareProbability())
 ]
 
 DIST_MIN = 0.5
@@ -58,15 +67,15 @@ def generate_fare(existingFares : [Fare]) -> Fare or None:
     while ovf < 10 and not success:
         ovf += 1
         # Pick two random points, and make sure they are a valid pairing
-        p1 = random.choice(points)
-        p2 = random.choice(points)
-        dist = Point.dist(p1, p2)
+        p1: SpawnPoint = random.choice(points)
+        p2: SpawnPoint = random.choice(points)
+        dist = Point.dist(p1.point, p2.point)
         # Need two unique points, within distance bounds, and not already in use
-        if (p1 == p2
+        if (p1.point == p2.point
                 or dist > max_dist
                 or dist < min_dist
-                or p1 in existing
-                or p2 in existing):
+                or p1.point in existing
+                or p2.point in existing):
             continue
         success = True
 
@@ -81,10 +90,10 @@ def generate_fare(existingFares : [Fare]) -> Fare or None:
         prob_mul[key] = min(max(targetProbabilities[key] / curr_ratio, 1/4), 10)
 
     if success:
-        prob = FareProbability()
+        prob = FareProbability.merge(p1.biases, p2.biases)
         # Multiply base probabilities by the
         for key, value in prob:
             prob[key] *= prob_mul.get(key, 1)
 
-        return Fare(p1, p2, prob.roll())
+        return Fare(p1.point, p2.point, prob.roll())
     return None

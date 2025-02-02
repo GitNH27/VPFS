@@ -15,10 +15,11 @@ camera_id = 0
 camera_width = 1600
 camera_height = 900
 # Intrinsics used in detection
-cam_fx = 950
-cam_fy = 950
-cam_cx = 800
-cam_cy = 455
+# Tuned for Logitech Brio 4k
+cam_fx = 978.56
+cam_fy = 973.73
+cam_cx = 825.30
+cam_cy = 467.65
 camera_intrinsics = (cam_fx, cam_fy, cam_cx, cam_cy)
 # Using 8cm tags
 tag_size = 8 / 100

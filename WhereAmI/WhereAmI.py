@@ -20,6 +20,8 @@ cam_fy = 950
 cam_cx = 800
 cam_cy = 455
 camera_intrinsics = (cam_fx, cam_fy, cam_cx, cam_cy)
+# Using 8cm tags
+tag_size = 8 / 100
 
 detector = Detector(
     nthreads=4,
@@ -87,7 +89,7 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Detect tags
-    detections = detector.detect(gray, True, camera_intrinsics, 0.1)
+    detections = detector.detect(gray, True, camera_intrinsics, tag_size)
     frame = show_tags(frame, detections)
     cameraPos = utils.compute_camera_pos(detections)
     # Check that there was good reference tag detection

@@ -18,6 +18,15 @@ function getTimeUntil(utcTimeSeconds){
 }
 
 function generateFareElement(fare, id){
+    let type = "Normal";
+    switch(fare.modifiers){
+        case 1:
+            type = "Subsidized"
+            break;
+        case 2:
+            type = "Senior"
+            break;
+    }
     let element = document.createElement("div");
     element.classList.add("fare");
     element.id = id;
@@ -25,6 +34,7 @@ function generateFareElement(fare, id){
     <h3>${fare.id}:</h3>
     <span class="tofrom">${fare.src.x},${fare.src.y} -> ${fare.dest.x},${fare.dest.y}</span>
     <span id="fare-${fare.id}-pay" style="padding:0">\$${fare.pay.toFixed(0)} / ${fare.reputation}%</span>
+    <span id="fare-${fare.id}-modifier" style="display: none" class="bg-neutral">${type}</span>
     <span id="fare-${fare.id}-claim" style="display: none" class="bg-neutral">Team</span>
     <span id="fare-${fare.id}-pickedUp" style="display:none" class="bg-ok">Picked Up</span>
     <span id="fare-${fare.id}-completed" style="display:none" class="bg-ok">Completed</span>
@@ -81,6 +91,7 @@ async function updateFares(){
         setVisibility(document.getElementById(`fare-${id}-pickedUp`), fare.pickedUp);
         setVisibility(document.getElementById(`fare-${id}-completed`), fare.completed);
         setVisibility(document.getElementById(`fare-${id}-paid`), fare.paid);
+        setVisibility(document.getElementById(`fare-${id}-modifier`), fare.modifiers != 0);
     }
 }
 

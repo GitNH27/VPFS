@@ -4,7 +4,7 @@ from Utils import Point
 from Fare import Fare, FareType
 import random
 
-from VPFS.FareProbability import FareProbability
+from FareProbability import FareProbability
 
 @dataclass
 class SpawnPoint:

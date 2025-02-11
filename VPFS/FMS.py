@@ -6,7 +6,7 @@ from Fare import Fare
 from Team import Team
 from threading import Lock
 
-from VPFS.Fare import FareType
+from Fare import FareType
 
 matchRunning = False
 matchNum = 0

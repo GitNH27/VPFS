@@ -132,7 +132,7 @@ def whereami_get(team: int):
         point = {
             "x": team.pos.x,
             "y": team.pos.y
-        },
+        }
         last_update = team.lastPosUpdate
     else:
         message = f"Team {team} not in this match"

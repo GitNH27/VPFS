@@ -3,13 +3,38 @@ import random
 from Utils import Point
 from Team import Team
 import time
+from enum import Enum
 
 POSITION_TOLERANCE = 0.15
-PICKUP_DURATION = 10
-DROPOFF_DURATION = 10
+PICKUP_DURATION = 5
+
+class FareType(Enum):
+    NORMAL = 0
+    SUBSIDIZED = 1
+    SENIOR = 2
+
+    def get_base_fare(self) -> float:
+        return 10
+
+    def get_dist_fare(self) -> float:
+        if self is FareType.SUBSIDIZED:
+            return 5
+        return 10
+
+    def get_reputation(self) -> float:
+        if self is FareType.SUBSIDIZED:
+            return 10
+        elif self is FareType.SENIOR:
+            return 10
+        return 5
+
+    def get_load_time(self) -> float:
+        if self is FareType.SENIOR:
+            return PICKUP_DURATION * 2
+        return PICKUP_DURATION
 
 class Fare:
-    def __init__(self, src : Point, dest: Point):
+    def __init__(self, src : Point, dest: Point, fare_type: FareType):
         """
         :param src: Location the ducky is picked up at
         :param dest: Location the ducky is delivered to
@@ -17,6 +42,7 @@ class Fare:
         self.src = src
         self.dest = dest
         self.dist = src.dist(dest)
+        self.type = fare_type
         self.expiry = time.time() + random.randint(60, 150)
         self.team : int | None = None
         # Timeout used to create pickup/dropoff delay
@@ -32,15 +58,14 @@ class Fare:
         Compute the fare earned from delivering this ducky
         :return:
         """
-        return self.dist * 7.5 + 2
+        return self.dist * self.type.get_dist_fare() + self.type.get_base_fare()
 
     def compute_karma(self) -> float:
         """
         Compute the karma earned from delivering this ducky
         :return:
         """
-        # TODO: Implement
-        return 5
+        return self.type.get_reputation()
 
     def claim_fare(self, idx: int, team: Team) -> str | None:
         """
@@ -59,7 +84,7 @@ class Fare:
         team.currentFare = idx
         return None
 
-    def pay_fare(self, teams : [Team]):
+    def pay_fare(self, teams : list[Team]):
         """
         Pay the team their fare
         Will ensure that fare is completed and fare is not already paid
@@ -76,7 +101,7 @@ class Fare:
     def to_json_dict(self, idx: int, extended: bool):
         data = {
             "id": idx,
-            "modifiers": 0,
+            "modifiers": self.type.value,
             "src": {
                 "x": self.src.x,
                 "y": self.src.y
@@ -99,7 +124,7 @@ class Fare:
             data["paid"] = self.paid
         return data
 
-    def periodic(self, number: int, teams: [Team]):
+    def periodic(self, number: int, teams: list[Team]):
         """
         Update phases of the fare
         Checks team position to determine if they are at start/destination, and if dropoff/pickup should occur
@@ -130,7 +155,7 @@ class Fare:
                 self.inPosition = True
                 # If no timeout started, then start it
                 if self._phaseTimeout == -1:
-                    self._phaseTimeout = time.time() + 5
+                    self._phaseTimeout = time.time() + self.type.get_load_time()
                 # If timeout completed, then set picked up
                 elif self._phaseTimeout < time.time():
                     self.pickedUp = True
@@ -144,7 +169,7 @@ class Fare:
                 self.inPosition = True
                 # If no timeout started, then start it
                 if self._phaseTimeout == -1:
-                    self._phaseTimeout = time.time() + 5
+                    self._phaseTimeout = time.time() + self.type.get_load_time()
                 # If timeout completed, then set fare completed
                 elif self._phaseTimeout < time.time():
                     self.completed = True

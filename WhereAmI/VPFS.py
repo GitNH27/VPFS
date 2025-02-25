@@ -1,5 +1,6 @@
 from typing import Dict, Tuple
 import socketio
+import sys
 
 sock = socketio.Client()
 
@@ -24,7 +25,8 @@ def disconnect():
     print("Disconnected from VPFS")
 
 # Localhost server works this is the same computer as VPFS
-# sock.connect("http://127.0.0.1:5000/")
+if 'vpfs' in sys.argv:
+    sock.connect("http://192.168.1.100:5000/")
 
 def send_update(tagPoses: Dict[int, Tuple[int, int, int]]):
     if not connected:

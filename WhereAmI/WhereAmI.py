@@ -12,8 +12,8 @@ import utils
 
 # Camera settings for Desktop mode
 camera_id = 0
-camera_width = 1600
-camera_height = 900
+camera_width = 4096
+camera_height = 2160
 # Intrinsics used in detection
 # Tuned for Logitech Brio 4k
 cam_fx = 978.56
@@ -52,14 +52,17 @@ if jetson:
     os.system("v4l2-ctl -d /dev/video0 -C focus_absolute")
     cam = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 else:
-    cam = cv2.VideoCapture(camera_id) # this is the magic!
-
+    cam = cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+    cam.open(camera_id + cv2.CAP_MSMF)
     cam.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
+    cam.set(cv2.CAP_PROP_AUTOFOCUS, 0) # Don't want autofocus to cause issues
 
 frameWidth = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
 frameHeight = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-print(frameWidth, 'x', frameHeight)
+max_fps = int(cam.get(cv2.CAP_PROP_FRAME_RATE))
+print(frameWidth, 'x', frameHeight, '@', max_fps)
+print(int(cam.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, byteorder=sys.byteorder).decode())
 
 font = cv2.FONT_HERSHEY_PLAIN
 def show_tags(img, detections):
@@ -114,7 +117,7 @@ while True:
         cv2.putText(frame, f"{tag}: X{tagPoses[tag][0]:.2f} Y{tagPoses[tag][1]:.2f} Z{tagPoses[tag][2]:.2f}", (0, frameHeight + i), font, 3, (255, 0, 255), 2, cv2.LINE_AA)
         i -= 50
 
-    cv2.imshow('frame', frame)
+    cv2.imshow('frame', cv2.resize(frame, (1080, 720)))
 
     cv2.waitKey(1)
 

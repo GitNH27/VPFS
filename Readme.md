@@ -97,9 +97,9 @@ This allows you to see which fares your vehicle is being offered, which one you 
 ![Sample Fare Statuses](Readme Images/Fare Statuses.png)
 
 ### Vehicle Positioning
-Currently there is no at-home support for running the camera-based positioning system. It is in the works and should be available soon.
+An at-home version of the camera system is also available. Full instructions are available under the At-Home Camera System header.
 
-In the meantime, or for those who don't have the space or need to set up a full simulation, you can use the dummy WhereAmI system. This allows you to simply enter the coordinates you want the system to think your vehicle is at.
+For those who don't have the space or need to set up a full simulation, you can use the dummy WhereAmI system. This allows you to simply enter the coordinates you want the system to think your vehicle is at.
 
 To launch the dummy system, either select `WhereAmI Dummy` from the PyCharm run dropdown or run `python3 WhereAmI.py` in the `WhereAmI_Dummy` folder.
 
@@ -114,6 +114,43 @@ To simulate a full fare, you just have to move your vehicle twice.
 2. Enter the coordinates for the start location in the WhereAmI Dummy console
 3. You should see the fare status show `In Position`. Wait for it to show `Picked Up`
 4. Now enter the coordinates for the end location
-5. You should see the fare status show `In Positoin` again. Wait for completion
+5. You should see the fare status show `In Position` again. Wait for completion
 6. When the fare has completed, it will move down and should show the `Completed` and `Paid` badges
 7. You should see your team's balance and reputation have been updated
+
+## At-Home Camera System
+If you want to test your vehicle with a real camera localization system, then you can also run the WhereAmI system at home.
+Note that this is less polished, and may require more debugging than the core VPFS module as cameras can be ... temperamental.
+If you have any issues, feel free to reach out on Teams, ask Greg in the labs, or raise an issue on Github.
+
+### Set Up
+Due to changes in how python 12 handles DLL loading, an earlier version is required. Python 3.11.x is the official option, however other versions have worked fine.
+
+You'll want to configure a second venv for use with this other python version. Unfortunately, pycharm/git don't play nice with a second venv, so you'll need to set it up manually.
+
+Follow the steps provided for manual installation with the VPFS core, but instead using Python 3.11.x (or your preferred version), and in a different venv folder.
+
+### Configuration
+There are a few constants you'll need to configure for your use
+
+**WhereAmI.py**
+- camera_id: The ID opencv uses for your camera. Likely 0 if it's your only camrea
+- camera_width/camera_height: The dimensions of your image. For a medium space 1920x1080 is probably sufficient. Smaller sizes will make it start/run faster
+- camera_fx/fy/cx/cy: Camera intrinsics, tuned the same way you did your Picar camera
+
+**RefTags.py**
+- Add the reference tags you will be using. The coordinate system will be calculated to make other tags appear relative to these references.
+  - Note that while multiple tags may be provided, only one is used at a time. The rest offer redundancy in the event of obstruction.
+
+**VPFS.py**
+- If you want to connect to a VPFS server, change the IP address in the call to `sock.connect()`
+
+### Running
+With the venv active, run the following command from the WhereAmI directory
+```commandline
+python WhereAmI.py
+// For VPFS connection, run
+python WhereAmI.py VPFS
+```
+It may take quite a few seconds to start, depending on your chosen resolution. The system is working when you see the camera output appear.
+The camera output is annotated with the tag detections, as well as their positions in your defined coordinate space.

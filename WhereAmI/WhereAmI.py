@@ -86,13 +86,20 @@ while True:
 
     # Sharpen the image
     # strength = 1.75
-    # blurred = cv2.GaussianBlur(frame, (0, 0), 1)
-    # frame = cv2.addWeighted(frame, 1.0 + strength, blurred, -strength, 0)
+    # blurred = cv2.GaussianBlur(
+
+    # fame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # cv2.imshow('frame', cv2.resize(frame, (1080, 720)))
+    # cv2.waitKey(1)
+
+    # continue
 
     # Process the frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    # Detect tags
+    # Detect tagsframe, (0, 0), 1)
+    # frame = cv2.addWeighted(frame, 1.0 + strength, blurred, -strength, 0)
+
     detections = detector.detect(gray, True, camera_intrinsics, tag_size)
     frame = show_tags(frame, detections)
     cameraPos = utils.compute_camera_pos(detections)

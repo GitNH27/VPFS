@@ -24,4 +24,8 @@ def _addTag(tag: ReferenceTag):
     refTags[tag.id] = tag
 
 # Currently just one tag, ID 0, placed at origin
+# _addTag(ReferenceTag(0, 0, 0))
+
+# Tags for lab setup
+# _addTag(ReferenceTag(584, 0.53, 0.715))
 _addTag(ReferenceTag(0, 0, 0))

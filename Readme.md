@@ -73,7 +73,7 @@ If you have issues at this step, you can ask for help on OnQ. Make sure to inclu
 Once you have an established connection, use this IP address as the server address in your code.
 
 ### Dashboard Configuration
-Once the VPFS server is running, go to https://localhost:5000/static/dashboard.html to view the dashboard.
+Once the VPFS server is running, go to http://localhost:5000/static/dashboard.html to view the dashboard.
 This will provide an overview of the current active match, teams, and fares.
 
 To add your team to the current "match", simply enter your team number and press add. You should see a new entry appear.

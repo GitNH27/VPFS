@@ -25,17 +25,26 @@ class PositionPrinter:
         self.end_pos = None
 
     def print_start_end_positions(self):
-        team = FMS.teams.get(self.team_id, None)
+        # Check if Team exists in FMS.teams, and if not, create it
+        if self.team_id not in FMS.teams:
+            print(f"Team {self.team_id} not found. Creating Team {self.team_id} with default position.")
+            # Initialize Team 1 with a default position (0, 0)
+            FMS.teams[self.team_id] = Team(self.team_id, Point(0, 0))  # Assuming Team constructor and Point exist
+        
+        team = FMS.teams.get(self.team_id)
         if team:
+            # Start position
             self.start_pos = (team.pos.x, team.pos.y)
             print(f"Start position for Team {self.team_id}: {self.start_pos}")
             
-            # Wait for some time or simulate some position change for demo
+            # Simulating position change
             time.sleep(5)  # Simulating a delay for position update
+            
+            # End position
             self.end_pos = (team.pos.x, team.pos.y)
             print(f"End position for Team {self.team_id}: {self.end_pos}")
         else:
-            print(f"Team {self.team_id} not found.")
+            print(f"Team {self.team_id} not found in FMS.teams.")
 
 @app.route("/")
 def serve_root():
@@ -101,10 +110,11 @@ def whereami_update(json):
         print(f"Validation failed: {e}")
 
 if __name__ == "__main__":
-    team_id = 1  # Example team ID (replace with actual team)
+    # Specify the team ID you want to print the position for (e.g., Team 1)
+    team_id = 1
     position_printer = PositionPrinter(team_id)
     
-    # Start printing positions
+    # Start printing positions (start and end)
     position_printer.print_start_end_positions()
     
     # Running Flask app

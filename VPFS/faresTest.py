@@ -1,12 +1,12 @@
 import json
 from urllib import request
-​
+
 # Server details will change between lab, home, and competition, so saving them somehwere easy to edit
 server_ip = "localhost"
 server = f"http://{server_ip}:5000"
 authKey = "my_auth_key" # For the lab, your auth key is your team number, at competition this will be a secret key
 team = 99
-​
+
 # Make request to fares endpoint
 res = request.urlopen(server + "/fares")
 # Verify that we got HTTP OK
@@ -40,7 +40,7 @@ else:
   # Report HTTP request error
   print("Got status", str(res.status), "requesting fares")
   
-​
+
   
 # Check the status of our fare
 res = request.urlopen(server + "/fares/current/" + str(team))

@@ -25,23 +25,23 @@ class PositionPrinter:
         self.end_pos = None
 
     def print_start_end_positions(self):
-        # Check if Team exists in FMS.teams, and if not, create it
+        # Check if Team exists in FMS.teams
         if self.team_id not in FMS.teams:
             print(f"Team {self.team_id} not found. Creating Team {self.team_id} with default position.")
-            # Initialize Team 1 with a default position (0, 0)
-            FMS.teams[self.team_id] = Team(self.team_id, Point(0, 0))  # Assuming Team constructor and Point exist
-        
-        team = FMS.teams.get(self.team_id)
-        if team:
+            # If team is not found, create a default position (0, 0) for Team 1
+            FMS.teams[self.team_id] = Point(0, 0)  # Create team with Point(0, 0) position
+            
+        team_pos = FMS.teams.get(self.team_id)
+        if team_pos:
             # Start position
-            self.start_pos = (team.pos.x, team.pos.y)
+            self.start_pos = (team_pos.x, team_pos.y)
             print(f"Start position for Team {self.team_id}: {self.start_pos}")
             
-            # Simulating position change
+            # Simulating position change after 5 seconds
             time.sleep(5)  # Simulating a delay for position update
             
             # End position
-            self.end_pos = (team.pos.x, team.pos.y)
+            self.end_pos = (team_pos.x, team_pos.y)
             print(f"End position for Team {self.team_id}: {self.end_pos}")
         else:
             print(f"Team {self.team_id} not found in FMS.teams.")
@@ -56,12 +56,12 @@ def whereami_get(team: int):
     last_update: int = 0
     message = ""
     if team in FMS.teams.keys():
-        team = FMS.teams[team]
+        team_pos = FMS.teams[team]
         point = {
-            "x": team.pos.x,
-            "y": team.pos.y
+            "x": team_pos.x,
+            "y": team_pos.y
         }
-        last_update = team.lastPosUpdate
+        last_update = time.time()
     else:
         message = f"Team {team} not in this match"
 
@@ -103,7 +103,7 @@ def whereami_update(json):
             x = entry['x']
             y = entry['y']
             if team in FMS.teams.keys():
-                FMS.teams[team].update_position(Point(x, y))
+                FMS.teams[team] = Point(x, y)  # Updating the team position directly
             else:
                 print(f"Team not in match {team}")
     except ValidationError as e:

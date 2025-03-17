@@ -1,7 +1,5 @@
-import requests
-
 class FareRetriever:
-    def __init__(self, base_url="http://localhost:5000"):
+    def __init__(self, base_url="http://127.0.0.1:5000"):
         self.base_url = base_url
     
     def get_fares(self):

@@ -173,16 +173,9 @@ path_finder = PathFinder()
 # Create the graph
 graph = path_finder.create_graph(intersections)
 
-# Fetch fare locations and determine start and goal nodes
-fare_locations = path_finder.get_fare_locations()
-
-# Assuming the first fare location as the start and the last as the goal for demonstration
-if fare_locations:
-    start_node = path_finder.find_closest_intersection(fare_locations[0]["location"], intersections)
-    goal_node = path_finder.find_closest_intersection(fare_locations[-1]["location"], intersections)
-else:
-    start_node = "Beak_Aquatic"  # Default start intersection
-    goal_node = "Feather_Pondside"  # Default goal intersection
+# Example usage
+start_node = "Beak_Aquatic"  # Replace with your desired start intersection
+goal_node = "Feather_Pondside"  # Replace with your desired goal intersection
 
 # Run Dijkstra's algorithm
 distances, path = path_finder.dijkstra(graph, start_node, goal_node)

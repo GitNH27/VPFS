@@ -32,18 +32,31 @@ detector = Detector(
 )
 
 # GStreamer pipeline to work with Jetson
+# pipeline = ' ! '.join([
+#     "v4l2src device=/dev/video0",
+#     "video/x-raw, fomat=YUYV, width=1600, height=896, framerate=15/2",
+#     "videoconvert",
+#     "video/x-raw, format=(string)BGR",
+#     "appsink drop=true sync=false"
+#     ])
+
 pipeline = ' ! '.join([
     "v4l2src device=/dev/video0",
-    "video/x-raw, fomat=YUYV, width=1600, height=896, framerate=15/2",
+    "image/jpeg, fomat=MJPG, width=2560, height=1440, framerate=5/1",
+    # "nvjpegdec",
+    "nvv4l2decoder mjpeg=1",
+    "nvvidconv",
     "videoconvert",
     "video/x-raw, format=(string)BGR",
     "appsink drop=true sync=false"
     ])
+max_fps = "5/1"
 
 # Run with jetson CLI opt for jetson use, otherwise runs desktop mode
 jetson = "jetson" in sys.argv
 
 if jetson:
+    print(pipeline)
     # Configure camera for best results
     os.system("v4l2-ctl -d /dev/video0 -c focus_auto=0")
     os.system("v4l2-ctl -d /dev/video0 -c focus_absolute=0")
@@ -56,11 +69,11 @@ else:
     cam.open(camera_id + cv2.CAP_MSMF)
     cam.set(cv2.CAP_PROP_FRAME_WIDTH, camera_width)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, camera_height)
+    max_fps = int(cam.get(cv2.CAP_PROP_FRAME_RATE))
     cam.set(cv2.CAP_PROP_AUTOFOCUS, 0) # Don't want autofocus to cause issues
 
 frameWidth = int(cam.get(cv2.CAP_PROP_FRAME_WIDTH))
 frameHeight = int(cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-max_fps = int(cam.get(cv2.CAP_PROP_FRAME_RATE))
 print(frameWidth, 'x', frameHeight, '@', max_fps)
 print(int(cam.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, byteorder=sys.byteorder).decode())
 

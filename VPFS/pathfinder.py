@@ -40,8 +40,9 @@ class PathFinder:
             "Beak_Tail": ["Circle_Tail", "Beak_Drake"],
             "Mallard_Migration": ["Beak_Aquatic", "Beak_Migration", "Mallard_Pondside"],
             "Mallard_Pondside": ["Mallard_Migration", "Beak_Pondside", "Mallard_Dabbler"],
-            "Mallard_Dabbler": ["Mallard_Pondside", "Beak_Duckling"],
+            "Mallard_Dabbler": ["Mallard_Pondside", "Mallard_Duckling", "Beak_Dabbler"],
             "Mallard_Drake": ["Mallard_Dabbler"],
+            "Mallard_Duckling": ["Beak_Duckling"],
             "Beak_Duckling": ["Beak_Tail", "Beak_Drake"],
             "Beak_Drake": ["Mallard_Drake", "Beak_Dabbler"],
             "Beak_Dabbler": ["Beak_Pondside"],
@@ -132,6 +133,39 @@ class PathFinder:
         else:
             print("Error: Could not retrieve fare data")
             return []
+        
+    def calculate_angle(prev, curr, next):
+        """Calculate the angle between three points: prev -> curr -> next"""
+        # Vector from prev to curr
+        vec1 = (curr[0] - prev[0], curr[1] - prev[1])
+        # Vector from curr to next
+        vec2 = (next[0] - curr[0], next[1] - curr[1])
+
+        # Dot product and magnitude
+        dot_product = vec1[0] * vec2[0] + vec1[1] * vec2[1]
+        mag1 = math.sqrt(vec1[0] ** 2 + vec1[1] ** 2)
+        mag2 = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
+    
+        # Calculate the angle using the dot product formula
+        angle = math.acos(dot_product / (mag1 * mag2)) * 180 / math.pi  # Convert to degrees
+
+        return angle
+
+    def print_turns(path, intersections):
+        """Print out left or right turns along the path"""
+        for i in range(1, len(path) - 1):
+            prev_intersection = intersections[path[i - 1]]
+            curr_intersection = intersections[path[i]]
+            next_intersection = intersections[path[i + 1]]
+        
+            angle = calculate_angle(prev_intersection, curr_intersection, next_intersection)
+        
+            if angle < 45:  # Going straight
+                print(f"Going straight at {path[i]}")
+            elif angle > 135:  # Right turn
+                print(f"Turn right at {path[i]}")
+            else:  # Left turn
+                print(f"Turn left at {path[i]}")
 
 
 # Coordinates for intersections (X, Y)

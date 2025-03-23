@@ -172,7 +172,7 @@ def whereami_update(json):
     # Validate payload
     try:
         validate(json, schema=whereami_update_schema)
-        for entry in json:
+        for entry in json:  
             team = entry['team']
             x = entry['x']
             y = entry['y']

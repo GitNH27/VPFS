@@ -13,22 +13,26 @@ authKey = "32"
 team = 32
 
 class PathFinder:
-    # Function to calculate Euclidean distance between two coordinates
     def calculate_distance(self, coord1, coord2):
-        return math.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2)
+        # Ensure both coord1 and coord2 are Point objects
+        if isinstance(coord1, Point) and isinstance(coord2, Point):
+            return coord1.dist(coord2)  # Use the dist method of the Point class
+        else:
+            # If coord1 or coord2 isn't a Point, use the old method (not likely to happen, but it's good to have)
+            return math.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2)
 
-    # Function to find the closest intersection to a fare location
+
     def find_closest_intersection(self, fare_location, intersections):
         closest_intersection = None
         closest_distance = float('inf')
 
-        for intersection, coord in intersections.items():
-            # Ensure fare_location is a Point object
-            if isinstance(fare_location, dict):  # If it's still a dictionary
-                fare_location = Point(fare_location['x'], fare_location['y'])  # Convert it to a Point object
+        # Ensure fare_location is a Point object
+        if isinstance(fare_location, dict):  # If it's still a dictionary
+            fare_location = Point(fare_location['x'], fare_location['y'])  # Convert to a Point object
 
-            # Calculate distance using fare_location (which is now a Point object)
-            distance = self.calculate_distance((fare_location.x, fare_location.y), coord)
+        # Calculate the distance from the fare location (Point) to each intersection (Point)
+        for intersection, coord in intersections.items():
+            distance = self.calculate_distance((fare_location.x, fare_location.y), (coord.x, coord.y))
             if distance < closest_distance:
                 closest_distance = distance
                 closest_intersection = intersection
@@ -81,15 +85,18 @@ class PathFinder:
         # Add the directed paths to the graph with calculated distances
         for from_intersection, to_intersections in directed_paths.items():
             for to_intersection in to_intersections:
-                # Calculate the Euclidean distance between the two intersections
+                # Calculate the Euclidean distance between the two intersections (which are now Point objects)
                 distance = self.calculate_distance(intersections[from_intersection], intersections[to_intersection])
                 # Add the directed edge with distance to the graph
                 graph[from_intersection][to_intersection] = distance
 
         return graph
 
-    # Function to implement Dijkstra's algorithm
     def dijkstra(self, graph, start, goal):
+        # If the start and goal are the same, return the start node
+        if start == goal:
+            return {start: 0}, [start]
+
         # Min-heap priority queue for storing the nodes to visit
         queue = [(0, start)]  # (distance, node)
         distances = {node: float('inf') for node in graph}  # Initialize all nodes with infinity
@@ -126,6 +133,8 @@ class PathFinder:
 
         path.insert(0, start)
         return distances, path
+
+
 
     # Method to print the graph for debugging purposes
     def print_graph(self, graph):
@@ -187,35 +196,35 @@ class PathFinder:
 
 # Coordinates for intersections (X, Y) divided by 100
 intersections = {
-    "Beak_Aquatic": (452 / 100, 29 / 100),
-    "Feather_Aquatic": (305 / 100, 29 / 100),
-    "Waddle_Aquatic": (129 / 100, 29 / 100),
-    "Waterfoul_Aquatic": (213 / 100, 29 / 100),
-    "Circle_Breadcrumb": (284 / 100, 393 / 100),
-    "Waddle_Breadcrumb": (181 / 100, 459 / 100),
-    "Feather_Circle": (305 / 100, 296 / 100),
-    "Waterfoul_Circle": (273 / 100, 307 / 100),
-    "Beak_Dabbler": (452 / 100, 293 / 100),
-    "Circle_Dabbler": (350 / 100, 324 / 100),
-    "Mallard_Dabbler": (585 / 100, 293 / 100),
-    "Beak_Drake": (452 / 100, 402 / 100),
-    "Mallard_Drake": (576 / 100, 354 / 100),
-    "Beak_Duckling": (452 / 100, 474 / 100),
-    "Mallard_Duckling": (593 / 100, 354 / 100),
-    "Beak_Migration": (452 / 100, 135 / 100),
-    "Feather_Migration": (305 / 100, 135 / 100),
-    "Mallard_Migration": (585 / 100, 135 / 100),
-    "Quack_Migration": (29 / 100, 135 / 100),
-    "Waddle_Migration": (129 / 100, 135 / 100),
-    "Waterfoul_Migration": (213 / 100, 135 / 100),
-    "Beak_Pondside": (452 / 100, 233 / 100),
-    "Feather_Pondside": (305 / 100, 233 / 100),
-    "Mallard_Pondside": (585 / 100, 233 / 100),
-    "Quack_Pondside": (28 / 100, 329 / 100),
-    "Waterfoul_Pondside": (214 / 100, 241 / 100),
-    "Waddle_Pondside": (157 / 100, 266 / 100),
-    "Beak_Tail": (452 / 100, 465 / 100),
-    "Circle_Tail": (335 / 100, 387 / 100)
+    "Beak_Aquatic": Point(452 / 100, 29 / 100),
+    "Feather_Aquatic": Point(305 / 100, 29 / 100),
+    "Waddle_Aquatic": Point(129 / 100, 29 / 100),
+    "Waterfoul_Aquatic": Point(213 / 100, 29 / 100),
+    "Circle_Breadcrumb": Point(284 / 100, 393 / 100),
+    "Waddle_Breadcrumb": Point(181 / 100, 459 / 100),
+    "Feather_Circle": Point(305 / 100, 296 / 100),
+    "Waterfoul_Circle": Point(273 / 100, 307 / 100),
+    "Beak_Dabbler": Point(452 / 100, 293 / 100),
+    "Circle_Dabbler": Point(350 / 100, 324 / 100),
+    "Mallard_Dabbler": Point(585 / 100, 293 / 100),
+    "Beak_Drake": Point(452 / 100, 402 / 100),
+    "Mallard_Drake": Point(576 / 100, 354 / 100),
+    "Beak_Duckling": Point(452 / 100, 474 / 100),
+    "Mallard_Duckling": Point(593 / 100, 354 / 100),
+    "Beak_Migration": Point(452 / 100, 135 / 100),
+    "Feather_Migration": Point(305 / 100, 135 / 100),
+    "Mallard_Migration": Point(585 / 100, 135 / 100),
+    "Quack_Migration": Point(29 / 100, 135 / 100),
+    "Waddle_Migration": Point(129 / 100, 135 / 100),
+    "Waterfoul_Migration": Point(213 / 100, 135 / 100),
+    "Beak_Pondside": Point(452 / 100, 233 / 100),
+    "Feather_Pondside": Point(305 / 100, 233 / 100),
+    "Mallard_Pondside": Point(585 / 100, 233 / 100),
+    "Quack_Pondside": Point(28 / 100, 329 / 100),
+    "Waterfoul_Pondside": Point(214 / 100, 241 / 100),
+    "Waddle_Pondside": Point(157 / 100, 266 / 100),
+    "Beak_Tail": Point(452 / 100, 465 / 100),
+    "Circle_Tail": Point(335 / 100, 387 / 100)
 }
 
 def claim_fare(server, authKey):
@@ -243,17 +252,20 @@ def find_shortest_path(path_finder, intersections, start, goal):
     start_intersection = path_finder.find_closest_intersection(start, intersections)
     goal_intersection = path_finder.find_closest_intersection(goal, intersections)
 
-    print(f"Closest start intersection: {start_intersection}")
-    print(f"Closest goal intersection: {goal_intersection}")
+    # print(f"Closest start intersection: {start_intersection}")
+    # print(f"Closest goal intersection: {goal_intersection}")
 
     distances, path = path_finder.dijkstra(graph, start_intersection, goal_intersection)
 
     if distances:
-        print(f"\nShortest distance from {start_intersection} to {goal_intersection}: {distances[goal_intersection]:.2f}")
-        print(f"Shortest path from {start_intersection} to {goal_intersection}:")
-        print(" -> ".join(path))
+        # print(f"\nShortest distance from {start_intersection} to {goal_intersection}: {distances[goal_intersection]:.2f}")
+        # print(f"Shortest path from {start_intersection} to {goal_intersection}:")
+        # print(" -> ".join(path))
+        # print("\n")
+        return path
     else:
         print("No path found")
+        return []
         
         
 def get_vehicle_position(server, team_id):
@@ -273,37 +285,86 @@ def get_vehicle_position(server, team_id):
         print(f"Error connecting to server: {e}")
 
     return None
+
+# Function to check if the vehicle has reached the intersection
+def has_reached_intersection(vehicle_position, intersection):
+    # Calculate the distance between the vehicle's position and the intersection
+    distance = math.sqrt((vehicle_position.x - intersection.x) ** 2 + (vehicle_position.y - intersection.y) ** 2)
+    return distance < 0.1  # Return True if the distance is less than 0.1, else False
+
+def find_two_closest_intersections(vehicle_position, intersections):
+    # Calculate the distances from the vehicle's position to all intersections
+    distances = []
+    for intersection, coord in intersections.items():
+        distance = math.sqrt((vehicle_position.x - coord.x) ** 2 + (vehicle_position.y - coord.y) ** 2)
+        distances.append((distance, intersection, coord))
+
+    # Sort the distances in ascending order
+    distances.sort()
+
+    # Get the two closest intersections
+    closest_intersections = distances[:2]
+
+    # Print the actual coordinates of the two closest intersections
+    for dist, intersection, coord in closest_intersections:
+        print(f"Intersection: {intersection}, Coordinates: ({coord.x}, {coord.y}), Distance: {dist:.2f}")
+
+    return [intersection for _, intersection, _ in closest_intersections]
     
-    
-def main():    
-    # Claim a fare
+def navigate_to_position(server, team, path_finder, intersections, target_location, target_name):
+    previous_intersection = None
+
+    while True:
+        vehicle_position = get_vehicle_position(server, team)
+        if vehicle_position:
+            vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
+            print(f"\nVehicle {team} position: ({vehicle_position.x}, {vehicle_position.y})")
+
+            path_to_target = find_shortest_path(path_finder, intersections, vehicle_position, target_location)
+            print(f"Path to {target_name} location: {path_to_target}")
+
+            next_intersection = path_to_target[1] if len(path_to_target) > 1 else None
+            print(f"Next intersection on the path to {target_name} location:", next_intersection)
+            if next_intersection:
+                print(f"Next intersection coordinates: ({intersections[next_intersection].x}, {intersections[next_intersection].y})")
+
+            next_intersection_coord = intersections[next_intersection] if next_intersection else None
+
+            if previous_intersection:
+                print(f"Previous intersection: {previous_intersection}")
+                print(f"Previous intersection coordinates: ({intersections[previous_intersection].x}, {intersections[previous_intersection].y})")
+                previous_intersection_coord = Point(intersections[previous_intersection].x, intersections[previous_intersection].y)
+
+            if previous_intersection and has_reached_intersection(vehicle_position, previous_intersection_coord):
+                print(f"Vehicle {team} has reached the previous intersection.")
+                previous_intersection = next_intersection
+            else:
+                print(f"Vehicle {team} has not reached the previous intersection yet.")
+
+            if previous_intersection is None and len(path_to_target) > 1:
+                previous_intersection = path_to_target[1]
+                
+            if next_intersection == None:
+                print(f"Vehicle {team} has reached the {target_name} location.")
+                break
+
+        else:
+            print("No position data available for vehicle.")
+
+        time.sleep(10)
+
+def main():
     fare = claim_fare(server, authKey)
     if not fare:
         return
-    
-    while(True):
-        # Fetch the vehicle's current position from the WhereAmI endpoint
-        vehicle_position = get_vehicle_position(server, team)
-        if vehicle_position:
-            print(f"Vehicle {team} position: {vehicle_position}")
 
-            vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
+    pickup_location = Point(fare['src']['x'], fare['src']['y'])
+    dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])
 
-            # # The actual pickup location should come from the fare object
-            # pickup_location = Point(fare['src']['x'], fare['src']['y'])  # The fare's pickup location
-            # dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])  # The fare's drop-off location
+    path_finder = PathFinder()
 
-            # # Create an instance of PathFinder
-            # path_finder = PathFinder()
-
-            # # Find the shortest path from the vehicle's position to the pickup location
-            # find_shortest_path(path_finder, intersections, vehicle_position, pickup_location)
-
-            # # Find the shortest path from the pickup location to the dropoff location
-            # find_shortest_path(path_finder, intersections, pickup_location, dropoff_location)
-            time.sleep(2)
-        else:
-            print("No position data available for vehicle.")
+    navigate_to_position(server, team, path_finder, intersections, pickup_location, "pickup")
+    navigate_to_position(server, team, path_finder, intersections, dropoff_location, "dropoff")
 
 if __name__ == "__main__":
     main()

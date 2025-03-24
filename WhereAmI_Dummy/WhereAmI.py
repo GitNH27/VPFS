@@ -19,7 +19,9 @@ def disconnect():
     print("I'm disconnected!")
 
 
-sock.connect("http://vpfs.lan:5000/")
+# sock.connect("http://vpfs.lan:5000/")
+sock.connect("http://10.216.29.48:5000/")
+
 
 team = int(input("Enter team number: "))
 lastX = 0

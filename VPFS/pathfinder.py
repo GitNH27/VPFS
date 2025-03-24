@@ -1,6 +1,10 @@
+import json
 import math
 import heapq
+import time
 import requests
+from Utils import Point
+from urllib import request
 
 class PathFinder:
     # Function to calculate Euclidean distance between two coordinates
@@ -13,12 +17,18 @@ class PathFinder:
         closest_distance = float('inf')
 
         for intersection, coord in intersections.items():
-            distance = self.calculate_distance(fare_location, coord)
+            # Ensure fare_location is a Point object
+            if isinstance(fare_location, dict):  # If it's still a dictionary
+                fare_location = Point(fare_location['x'], fare_location['y'])  # Convert it to a Point object
+
+            # Calculate distance using fare_location (which is now a Point object)
+            distance = self.calculate_distance((fare_location.x, fare_location.y), coord)
             if distance < closest_distance:
                 closest_distance = distance
                 closest_intersection = intersection
 
         return closest_intersection
+
 
     # Function to create the graph by adding distances between intersections in all 4 directions
     def create_graph(self, intersections):
@@ -115,25 +125,7 @@ class PathFinder:
     def print_graph(self, graph):
         for intersection, neighbors in graph.items():
             print(f"{intersection}: {neighbors}")
-
-    # Fetch the fare locations from your Flask app
-    def get_fare_locations():
-        url = 'http://127.0.0.1:5000/fares'  # URL to your Flask API
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            fares_data = response.json()
-            fare_locations = []
-            for fare in fares_data:
-                fare_locations.append({
-                    "number": fare["number"],
-                    "location": (fare["position"]["x"], fare["position"]["y"])
-                })
-            return fare_locations
-        else:
-            print("Error: Could not retrieve fare data")
-            return []
-        
+            
     def calculate_angle(prev, curr, next):
         """Calculate the angle between three points: prev -> curr -> next"""
         # Vector from prev to curr
@@ -166,60 +158,125 @@ class PathFinder:
                 print(f"Turn right at {path[i]}")
             else:  # Left turn
                 print(f"Turn left at {path[i]}")
+                
+def get_vehicle_position(team_id):
+    server_ip = "10.216.29.48"  # Replace with the actual server IP
+    url = f"http://{server_ip}:5000/whereami/{team_id}"
 
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            position = data.get("position", None)
+            if position:
+                return position
+            else:
+                print(f"Error: {data.get('message', 'No position data available')}")
+        else:
+            print(f"Error: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to server: {e}")
 
-# Coordinates for intersections (X, Y)
+    return None
+
+# Coordinates for intersections (X, Y) divided by 100
 intersections = {
-    "Beak_Aquatic": (452, 29),
-    "Feather_Aquatic": (305, 29),
-    "Waddle_Aquatic": (129, 29),
-    "Waterfoul_Aquatic": (213, 29),
-    "Circle_Breadcrumb": (284, 393),
-    "Waddle_Breadcrumb": (181, 459),
-    "Feather_Circle": (305, 296),
-    "Waterfoul_Circle": (273, 307),
-    "Beak_Dabbler": (452, 293),
-    "Circle_Dabbler": (350, 324),
-    "Mallard_Dabbler": (585, 293),
-    "Beak_Drake": (452, 402),
-    "Mallard_Drake": (576, 354),
-    "Beak_Duckling": (452, 474),
-    "Mallard_Duckling": (593, 354),
-    "Beak_Migration": (452, 135),
-    "Feather_Migration": (305, 135),
-    "Mallard_Migration": (585, 135),
-    "Quack_Migration": (29, 135),
-    "Waddle_Migration": (129, 135),
-    "Waterfoul_Migration": (213, 135),
-    "Beak_Pondside": (452, 233),
-    "Feather_Pondside": (305, 233),
-    "Mallard_Pondside": (585, 233),
-    "Quack_Pondside": (28, 329),
-    "Waterfoul_Pondside": (214, 241),
-    "Waddle_Pondside": (157, 266),
-    "Beak_Tail": (452, 465),
-    "Circle_Tail": (335, 387)
+    "Beak_Aquatic": (452 / 100, 29 / 100),
+    "Feather_Aquatic": (305 / 100, 29 / 100),
+    "Waddle_Aquatic": (129 / 100, 29 / 100),
+    "Waterfoul_Aquatic": (213 / 100, 29 / 100),
+    "Circle_Breadcrumb": (284 / 100, 393 / 100),
+    "Waddle_Breadcrumb": (181 / 100, 459 / 100),
+    "Feather_Circle": (305 / 100, 296 / 100),
+    "Waterfoul_Circle": (273 / 100, 307 / 100),
+    "Beak_Dabbler": (452 / 100, 293 / 100),
+    "Circle_Dabbler": (350 / 100, 324 / 100),
+    "Mallard_Dabbler": (585 / 100, 293 / 100),
+    "Beak_Drake": (452 / 100, 402 / 100),
+    "Mallard_Drake": (576 / 100, 354 / 100),
+    "Beak_Duckling": (452 / 100, 474 / 100),
+    "Mallard_Duckling": (593 / 100, 354 / 100),
+    "Beak_Migration": (452 / 100, 135 / 100),
+    "Feather_Migration": (305 / 100, 135 / 100),
+    "Mallard_Migration": (585 / 100, 135 / 100),
+    "Quack_Migration": (29 / 100, 135 / 100),
+    "Waddle_Migration": (129 / 100, 135 / 100),
+    "Waterfoul_Migration": (213 / 100, 135 / 100),
+    "Beak_Pondside": (452 / 100, 233 / 100),
+    "Feather_Pondside": (305 / 100, 233 / 100),
+    "Mallard_Pondside": (585 / 100, 233 / 100),
+    "Quack_Pondside": (28 / 100, 329 / 100),
+    "Waterfoul_Pondside": (214 / 100, 241 / 100),
+    "Waddle_Pondside": (157 / 100, 266 / 100),
+    "Beak_Tail": (452 / 100, 465 / 100),
+    "Circle_Tail": (335 / 100, 387 / 100)
 }
 
-# Create an instance of PathFinder and run the graph creation
-path_finder = PathFinder()
+# Server details
+server_ip = "10.216.29.48"
+server = f"http://{server_ip}:5000"
+authKey = "32"
+team = 32
 
-# Create the graph
-graph = path_finder.create_graph(intersections)
+# Make request to fares endpoint to claim a fare
+res = request.urlopen(server + "/fares")
+if res.status == 200:
+    fares = json.loads(res.read())
+    for fare in fares:
+        if not fare['claimed']:
+            toClaim = fare['id']
+            res = request.urlopen(server + "/fares/claim/" + str(toClaim) + "?auth=" + authKey)
+            if res.status == 200:
+                data = json.loads(res.read())
+                if data['success']:
+                    print("Claimed fare id", toClaim)
+                    break
+                else:
+                    print("Failed to claim fare", toClaim, "reason:", data['message'])
+else:
+    print("Got status", str(res.status), "requesting fares")
 
-# Example usage
-start_node = "Beak_Aquatic"  # Replace with your desired start intersection
-goal_node = "Feather_Pondside"  # Replace with your desired goal intersection
+# Fetch the vehicle's current position from the WhereAmI endpoint
+vehicle_position = get_vehicle_position(team)
+if vehicle_position:
+    print(f"Vehicle {team} position: {vehicle_position}")
+    
+    vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
+    
+    # The actual pickup location should come from the fare object
+    pickup_location = Point(fare['src']['x'], fare['src']['y'])  # The fare's pickup location
+    dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])  # The fare's drop-off location
 
-# Run Dijkstra's algorithm
-distances, path = path_finder.dijkstra(graph, start_node, goal_node)
+    # Create an instance of PathFinder and run the graph creation
+    path_finder = PathFinder()
+    graph = path_finder.create_graph(intersections)
 
-# Debugging: Print the graph and distances to see what's happening
-print("\nGraph (Intersections and Connections):")
-path_finder.print_graph(graph)
+    # Find the closest intersection for the current vehicle position and the pickup location
+    start_intersection = path_finder.find_closest_intersection(vehicle_position, intersections)
+    pickup_intersection = path_finder.find_closest_intersection(pickup_location, intersections)
 
-# Print the results
-if distances:
-    print(f"\nShortest distance from {start_node} to {goal_node}: {distances[goal_node]:.2f}")
-    print(f"Shortest path from {start_node} to {goal_node}:")
-    print(" -> ".join(path))
+    print(f"Closest vehicle position intersection: {start_intersection}")
+    print(f"Closest pickup intersection: {pickup_intersection}")
+
+    # Run Dijkstra's algorithm to find the shortest path from the vehicle's position to the pickup location
+    distances, path = path_finder.dijkstra(graph, start_intersection, pickup_intersection)
+
+    if distances:
+        print(f"\nShortest distance from {start_intersection} to {pickup_intersection}: {distances[pickup_intersection]:.2f}")
+        print(f"Shortest path from {start_intersection} to {pickup_intersection}:")
+        print(" -> ".join(path))
+
+    # Now calculate the path from pickup location to destination (drop-off)
+    goal_intersection = path_finder.find_closest_intersection(dropoff_location, intersections)
+
+    print(f"Closest dropoff intersection: {goal_intersection}")
+
+    # Run Dijkstra's algorithm to find the shortest path from the pickup to the dropoff location
+    distances, path = path_finder.dijkstra(graph, pickup_intersection, goal_intersection)
+
+    if distances:
+        print(f"\nShortest distance from {pickup_intersection} to {goal_intersection}: {distances[goal_intersection]:.2f}")
+        print(f"Shortest path from {pickup_intersection} to {goal_intersection}:")
+        print(" -> ".join(path))
+else:
+    print("No position data available for vehicle.")

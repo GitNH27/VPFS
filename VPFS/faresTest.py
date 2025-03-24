@@ -1,9 +1,16 @@
 import json
 import math
 import heapq
+import time
 import requests
 from Utils import Point
 from urllib import request
+
+# Server details
+server_ip = "10.216.29.48"
+server = f"http://{server_ip}:5000"
+authKey = "32"
+team = 32
 
 class PathFinder:
     # Function to calculate Euclidean distance between two coordinates
@@ -158,25 +165,25 @@ class PathFinder:
             else:  # Left turn
                 print(f"Turn left at {path[i]}")
                 
-def get_vehicle_position(team_id):
-    server_ip = "10.216.29.48"  # Replace with the actual server IP
-    url = f"http://{server_ip}:5000/whereami/{team_id}"
+# def get_vehicle_position(team_id):
+#     server_ip = "10.216.29.48"  # Replace with the actual server IP
+#     url = f"http://{server_ip}:5000/whereami/{team_id}"
 
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            position = data.get("position", None)
-            if position:
-                return position
-            else:
-                print(f"Error: {data.get('message', 'No position data available')}")
-        else:
-            print(f"Error: {response.status_code} - {response.text}")
-    except requests.exceptions.RequestException as e:
-        print(f"Error connecting to server: {e}")
+#     try:
+#         response = requests.get(url)
+#         if response.status_code == 200:
+#             data = response.json()
+#             position = data.get("position", None)
+#             if position:
+#                 return position
+#             else:
+#                 print(f"Error: {data.get('message', 'No position data available')}")
+#         else:
+#             print(f"Error: {response.status_code} - {response.text}")
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error connecting to server: {e}")
 
-    return None
+#     return None
 
 # Coordinates for intersections (X, Y) divided by 100
 intersections = {
@@ -211,71 +218,92 @@ intersections = {
     "Circle_Tail": (335 / 100, 387 / 100)
 }
 
-# Server details
-server_ip = "10.216.29.48"
-server = f"http://{server_ip}:5000"
-authKey = "32"
-team = 32
+def claim_fare(server, authKey):
+    # Make request to fares endpoint to claim a fare
+    res = request.urlopen(server + "/fares")
+    if res.status == 200:
+        fares = json.loads(res.read())
+        for fare in fares:
+            if not fare['claimed']:
+                toClaim = fare['id']
+                res = request.urlopen(server + "/fares/claim/" + str(toClaim) + "?auth=" + authKey)
+                if res.status == 200:
+                    data = json.loads(res.read())
+                    if data['success']:
+                        print("Claimed fare id", toClaim)
+                        return fare
+                    else:
+                        print("Failed to claim fare", toClaim, "reason:", data['message'])
+    else:
+        print("Got status", str(res.status), "requesting fares")
+    return None
 
-# Make request to fares endpoint to claim a fare
-res = request.urlopen(server + "/fares")
-if res.status == 200:
-    fares = json.loads(res.read())
-    for fare in fares:
-        if not fare['claimed']:
-            toClaim = fare['id']
-            res = request.urlopen(server + "/fares/claim/" + str(toClaim) + "?auth=" + authKey)
-            if res.status == 200:
-                data = json.loads(res.read())
-                if data['success']:
-                    print("Claimed fare id", toClaim)
-                    break
-                else:
-                    print("Failed to claim fare", toClaim, "reason:", data['message'])
-else:
-    print("Got status", str(res.status), "requesting fares")
-
-# Fetch the vehicle's current position from the WhereAmI endpoint
-vehicle_position = get_vehicle_position(team)
-if vehicle_position:
-    print(f"Vehicle {team} position: {vehicle_position}")
-    
-    vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
-    
-    # The actual pickup location should come from the fare object
-    pickup_location = Point(fare['src']['x'], fare['src']['y'])  # The fare's pickup location
-    dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])  # The fare's drop-off location
-
-    # Create an instance of PathFinder and run the graph creation
-    path_finder = PathFinder()
+def find_shortest_path(path_finder, intersections, start, goal):
     graph = path_finder.create_graph(intersections)
+    start_intersection = path_finder.find_closest_intersection(start, intersections)
+    goal_intersection = path_finder.find_closest_intersection(goal, intersections)
 
-    # Find the closest intersection for the current vehicle position and the pickup location
-    start_intersection = path_finder.find_closest_intersection(vehicle_position, intersections)
-    pickup_intersection = path_finder.find_closest_intersection(pickup_location, intersections)
+    print(f"Closest start intersection: {start_intersection}")
+    print(f"Closest goal intersection: {goal_intersection}")
 
-    print(f"Closest vehicle position intersection: {start_intersection}")
-    print(f"Closest pickup intersection: {pickup_intersection}")
-
-    # Run Dijkstra's algorithm to find the shortest path from the vehicle's position to the pickup location
-    distances, path = path_finder.dijkstra(graph, start_intersection, pickup_intersection)
+    distances, path = path_finder.dijkstra(graph, start_intersection, goal_intersection)
 
     if distances:
-        print(f"\nShortest distance from {start_intersection} to {pickup_intersection}: {distances[pickup_intersection]:.2f}")
-        print(f"Shortest path from {start_intersection} to {pickup_intersection}:")
+        print(f"\nShortest distance from {start_intersection} to {goal_intersection}: {distances[goal_intersection]:.2f}")
+        print(f"Shortest path from {start_intersection} to {goal_intersection}:")
         print(" -> ".join(path))
+    else:
+        print("No path found")
+        
+        
+def get_vehicle_position(server, team_id):
+    url = f"{server}/whereami/{team_id}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            position = data.get("position", None)
+            if position:
+                return position
+            else:
+                print(f"Error: {data.get('message', 'No position data available')}")
+        else:
+            print(f"Error: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to server: {e}")
 
-    # Now calculate the path from pickup location to destination (drop-off)
-    goal_intersection = path_finder.find_closest_intersection(dropoff_location, intersections)
+    return None
+    
+    
+def main():    
+    # Claim a fare
+    fare = claim_fare(server, authKey)
+    if not fare:
+        return
+    
+    while(True):
+        # Fetch the vehicle's current position from the WhereAmI endpoint
+        vehicle_position = get_vehicle_position(server, team)
+        if vehicle_position:
+            print(f"Vehicle {team} position: {vehicle_position}")
 
-    print(f"Closest dropoff intersection: {goal_intersection}")
+            vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
 
-    # Run Dijkstra's algorithm to find the shortest path from the pickup to the dropoff location
-    distances, path = path_finder.dijkstra(graph, pickup_intersection, goal_intersection)
+            # # The actual pickup location should come from the fare object
+            # pickup_location = Point(fare['src']['x'], fare['src']['y'])  # The fare's pickup location
+            # dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])  # The fare's drop-off location
 
-    if distances:
-        print(f"\nShortest distance from {pickup_intersection} to {goal_intersection}: {distances[goal_intersection]:.2f}")
-        print(f"Shortest path from {pickup_intersection} to {goal_intersection}:")
-        print(" -> ".join(path))
-else:
-    print("No position data available for vehicle.")
+            # # Create an instance of PathFinder
+            # path_finder = PathFinder()
+
+            # # Find the shortest path from the vehicle's position to the pickup location
+            # find_shortest_path(path_finder, intersections, vehicle_position, pickup_location)
+
+            # # Find the shortest path from the pickup location to the dropoff location
+            # find_shortest_path(path_finder, intersections, pickup_location, dropoff_location)
+            time.sleep(2)
+        else:
+            print("No position data available for vehicle.")
+
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,8 @@ import time
 import requests
 from Utils import Point
 from urllib import request
+from Team import Team
+from Fare import Fare, FareType
 
 # Server details
 server_ip = "10.216.29.48"
@@ -240,7 +242,10 @@ def claim_fare(server, authKey):
                     data = json.loads(res.read())
                     if data['success']:
                         print("Claimed fare id", toClaim)
-                        return fare
+                        src = Point(fare['src']['x'], fare['src']['y'])
+                        dest = Point(fare['dest']['x'], fare['dest']['y'])
+                        fare_type = FareType(fare.get('fare_type', 0))  # Use a default value if 'fare_type' is not present
+                        return Fare(src, dest, fare_type)  # Return an instance of Fare
                     else:
                         print("Failed to claim fare", toClaim, "reason:", data['message'])
     else:
@@ -311,7 +316,7 @@ def find_two_closest_intersections(vehicle_position, intersections):
 
     return [intersection for _, intersection, _ in closest_intersections]
     
-def navigate_to_position(server, team, path_finder, intersections, target_location, target_name):
+def navigate_to_position(server, team, path_finder, intersections, target_location, target_name, fare):
     previous_intersection = None
 
     while True:
@@ -346,10 +351,24 @@ def navigate_to_position(server, team, path_finder, intersections, target_locati
                 
             if next_intersection == None:
                 print(f"Vehicle {team} has reached the {target_name} location.")
+                # Stop
                 break
 
         else:
             print("No position data available for vehicle.")
+        
+        # Update fare status
+        teamStatus = Team(team)
+        teamStatus.update_position(vehicle_position)
+        fare.periodic(team, [teamStatus])
+        if fare.inPosition:
+            print("In Position Badge")
+        if fare.pickedUp:
+            print("Picked Up Badge")
+        if fare.completed:
+            print("Completed Badge")
+        if fare.paid:
+            print("Paid Badge")
 
         time.sleep(10)
 
@@ -358,13 +377,13 @@ def main():
     if not fare:
         return
 
-    pickup_location = Point(fare['src']['x'], fare['src']['y'])
-    dropoff_location = Point(fare['dest']['x'], fare['dest']['y'])
+    pickup_location = fare.src
+    dropoff_location = fare.dest
 
     path_finder = PathFinder()
 
-    navigate_to_position(server, team, path_finder, intersections, pickup_location, "pickup")
-    navigate_to_position(server, team, path_finder, intersections, dropoff_location, "dropoff")
+    navigate_to_position(server, team, path_finder, intersections, pickup_location, "pickup", fare)
+    navigate_to_position(server, team, path_finder, intersections, dropoff_location, "dropoff", fare)
 
 if __name__ == "__main__":
     main()

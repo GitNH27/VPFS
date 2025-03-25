@@ -143,38 +143,38 @@ class PathFinder:
         for intersection, neighbors in graph.items():
             print(f"{intersection}: {neighbors}")
             
-    def calculate_angle(prev, curr, next):
-        """Calculate the angle between three points: prev -> curr -> next"""
-        # Vector from prev to curr
-        vec1 = (curr[0] - prev[0], curr[1] - prev[1])
-        # Vector from curr to next
-        vec2 = (next[0] - curr[0], next[1] - curr[1])
+def calculate_angle(prev, curr, next):
+    """Calculate the angle between three points: prev -> curr -> next"""
+    # Vector from prev to curr
+    vec1 = (curr.x - prev.x, curr.y - prev.y)
+    # Vector from curr to next
+    vec2 = (next.x - curr.x, next.y - curr.y)
 
-        # Dot product and magnitude
-        dot_product = vec1[0] * vec2[0] + vec1[1] * vec2[1]
-        mag1 = math.sqrt(vec1[0] ** 2 + vec1[1] ** 2)
-        mag2 = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
+    # Dot product and magnitude
+    dot_product = vec1[0] * vec2[0] + vec1[1] * vec2[1]
+    mag1 = math.sqrt(vec1[0] ** 2 + vec1[1] ** 2)
+    mag2 = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
+
+    # Calculate the angle using the dot product formula
+    angle = math.acos(dot_product / (mag1 * mag2)) * 180 / math.pi  # Convert to degrees
+
+    return angle
+
+def print_turns(path, intersections):
+    """Print out left or right turns along the path"""
+    for i in range(1, len(path) - 1):
+        prev_intersection = intersections[path[i - 1]]
+        curr_intersection = intersections[path[i]]
+        next_intersection = intersections[path[i + 1]]
     
-        # Calculate the angle using the dot product formula
-        angle = math.acos(dot_product / (mag1 * mag2)) * 180 / math.pi  # Convert to degrees
-
-        return angle
-
-    def print_turns(path, intersections):
-        """Print out left or right turns along the path"""
-        for i in range(1, len(path) - 1):
-            prev_intersection = intersections[path[i - 1]]
-            curr_intersection = intersections[path[i]]
-            next_intersection = intersections[path[i + 1]]
-        
-            angle = calculate_angle(prev_intersection, curr_intersection, next_intersection)
-        
-            if angle < 45:  # Going straight
-                print(f"Going straight at {path[i]}")
-            elif angle > 135:  # Right turn
-                print(f"Turn right at {path[i]}")
-            else:  # Left turn
-                print(f"Turn left at {path[i]}")
+        angle = calculate_angle(prev_intersection, curr_intersection, next_intersection)
+    
+        if angle < 45:  # Going straight
+            print(f"Going straight at {path[i]}")
+        elif angle > 135:  # Right turn
+            print(f"Turn right at {path[i]}")
+        else:  # Left turn
+            print(f"Turn left at {path[i]}")
                 
 # def get_vehicle_position(team_id):
 #     server_ip = "10.216.29.48"  # Replace with the actual server IP
@@ -323,36 +323,45 @@ def navigate_to_position(server, team, path_finder, intersections, target_locati
         vehicle_position = get_vehicle_position(server, team)
         if vehicle_position:
             vehicle_position = Point(vehicle_position['x'], vehicle_position['y'])
-            print(f"\nVehicle {team} position: ({vehicle_position.x}, {vehicle_position.y})")
+            print(f"\nVehicle {team} current position: ({vehicle_position.x}, {vehicle_position.y})")
 
+            # Find the path to the target location (pickup or dropoff)
             path_to_target = find_shortest_path(path_finder, intersections, vehicle_position, target_location)
-            print(f"Path to {target_name} location: {path_to_target}")
+            #print(f"Path to {target_name} location: {path_to_target}")
 
+            # Get the next intersection on the path
             next_intersection = path_to_target[1] if len(path_to_target) > 1 else None
-            print(f"Next intersection on the path to {target_name} location:", next_intersection)
-            if next_intersection:
-                print(f"Next intersection coordinates: ({intersections[next_intersection].x}, {intersections[next_intersection].y})")
+            
+            print(f"Next intersection coordinates: ({intersections[next_intersection].x}, {intersections[next_intersection].y})", next_intersection)
 
             next_intersection_coord = intersections[next_intersection] if next_intersection else None
 
+            # Print details of the previous intersection
             if previous_intersection:
-                print(f"Previous intersection: {previous_intersection}")
-                print(f"Previous intersection coordinates: ({intersections[previous_intersection].x}, {intersections[previous_intersection].y})")
+                print(f"Previous intersection coordinates: ({intersections[previous_intersection].x}, {intersections[previous_intersection].y}): ", previous_intersection)
                 previous_intersection_coord = Point(intersections[previous_intersection].x, intersections[previous_intersection].y)
 
+            # Check if the vehicle has reached the previous intersection
             if previous_intersection and has_reached_intersection(vehicle_position, previous_intersection_coord):
-                print(f"Vehicle {team} has reached the previous intersection.")
-                previous_intersection = next_intersection
+                previous_intersection = next_intersection  # Move to the next intersection
+                
+                # Print the navigation instruction for the next intersection
+                if next_intersection:
+                    current_instruction = intersections[next_intersection]
+                    next_instruction = intersections[path_to_target[path_to_target.index(next_intersection) + 1]] if path_to_target.index(next_intersection) + 1 < len(path_to_target) else None
+                    instruction = generate_navigation_instruction(vehicle_position, current_instruction, next_instruction)
+                    print(f"Has reached the previous intersection. Instruction: {instruction}: ", next_intersection, "\n")
             else:
                 print(f"Vehicle {team} has not reached the previous intersection yet.")
 
+            # Set the first intersection as the previous intersection if it's the initial iteration
             if previous_intersection is None and len(path_to_target) > 1:
                 previous_intersection = path_to_target[1]
-                
+
+            # If the vehicle has reached the target location
             if next_intersection == None:
                 print(f"Vehicle {team} has reached the {target_name} location.")
-                # Stop
-                break
+                break  # Exit the loop once the target is reached
 
         else:
             print("No position data available for vehicle.")
@@ -371,6 +380,22 @@ def navigate_to_position(server, team, path_finder, intersections, target_locati
             print("Paid Badge")
 
         time.sleep(10)
+
+
+def generate_navigation_instruction(vehicle_position, current_intersection, next_intersection):
+    """Generate the navigation instruction based on the current and next intersections."""
+    if next_intersection:
+        # Calculate the angle of turn
+        angle = calculate_angle(vehicle_position, current_intersection, next_intersection)
+
+        if angle < 45:  # Going straight
+            return f"Go straight at ({current_intersection.x}, {current_intersection.y})"
+        elif angle > 135:  # Right turn
+            return f"Turn right at ({current_intersection.x}, {current_intersection.y})"
+        else:  # Left turn
+            return f"Turn left at ({current_intersection.x}, {current_intersection.y})"
+    return "Continue straight"
+
 
 def main():
     fare = claim_fare(server, authKey)
